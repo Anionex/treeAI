@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #4f46e5;
+  --color-primary-light: #6366f1;
+  --color-secondary: #14b8a6;
+  --color-accent: #f59e0b;
+  --color-success: #22c55e;
+  --color-warning: #f97316;
+  --color-error: #ef4444;
+  --color-background: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  --color-text-light: #6b7280;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  @apply bg-gray-50 text-gray-900 overflow-hidden;
+  height: 100vh;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.system-node {
+  @apply bg-indigo-50 border border-indigo-200;
+}
+
+.user-message {
+  @apply bg-white border border-gray-200;
+}
+
+.assistant-message {
+  @apply bg-blue-50 border border-blue-200;
+}
+
+.react-flow__node {
+  @apply rounded-lg shadow-md;
+}
+
+.react-flow__handle {
+  @apply bg-indigo-500;
+}
+
+.node-toolbar {
+  @apply opacity-0 transition-opacity duration-200;
+}
+
+.react-flow__node:hover .node-toolbar {
+  @apply opacity-100;
+}
+
+.node-content {
+  max-width: 500px;
+  min-width: 300px;
+}
+
+.sidebar-session {
+  @apply hover:bg-gray-100 transition-colors duration-200 cursor-pointer rounded-md;
+}
+
+.sidebar-session.active {
+  @apply bg-indigo-100 text-indigo-700;
+}
+
+.md-editor-preview-wrapper {
+  @apply rounded-md overflow-hidden;
+}
+
+.md-preview {
+  @apply prose prose-indigo max-w-none;
+}
+
+/* Prevent scrollbar from taking space */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-600;
+}
