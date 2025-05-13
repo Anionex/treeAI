@@ -53,7 +53,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
     if (!userMessage.trim()) return;
     
     onEdit(node.id, userMessage, 'user');
-    setIsEditingUser(false);
+    // setIsEditingUser(false); // 发送后不切换编辑态，输入框内容不变
     
     // If there's no AI response yet, trigger one
     if (!node.assistantMessage && !node.isStreaming) {
@@ -86,7 +86,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
   return (
     <div 
       ref={nodeRef}
-      className="node-content bg-white rounded-lg shadow-md overflow-hidden"
+      className="node-content bg-white rounded-lg shadow-md overflow-hidden max-w-[10px] w-full"
     >
       <Handle
         type="target"
@@ -173,8 +173,11 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             <textarea
               ref={userInputRef}
               value={userMessage}
-              onChange={(e) => setUserMessage(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md min-h-[80px] pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onChange={(e) => {
+                setUserMessage(e.target.value);
+                onEdit(node.id, e.target.value, 'user');
+              }}
+              className="w-full p-2 border border-gray-300 rounded-md min-h-[120px] pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Type your message..."
               onKeyDown={handleKeyDown}
             />
@@ -189,7 +192,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         ) : (
           <div className="relative group">
             <div 
-              className="pr-8 min-h-[40px]"
+              className="pr-8 min-h-[160px]"
               onClick={() => setIsEditingUser(true)}
             >
               {node.userMessage || <span className="text-gray-400 italic">Click to add message...</span>}
@@ -226,8 +229,8 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             <MdPreview 
               editorId={`preview-${node.id}`}
               modelValue={node.assistantMessage}
-              className="md-preview"
-              style={{ backgroundColor: 'transparent' }}
+              className="md-preview overflow-auto break-words"
+              style={{ backgroundColor: 'transparent', maxWidth: '100%' }}
               previewTheme="vuepress"
             />
             <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -241,7 +244,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             </div>
           </div>
         ) : !node.isStreaming ? (
-          <div className="text-gray-400 italic min-h-[40px]">
+          <div className="text-gray-400 italic min-h-[160px]">
             {node.error ? 'Retry to get AI response' : 'AI response will appear here'}
           </div>
         ) : null}

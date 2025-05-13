@@ -75,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick }) => {
   return (
     <div 
       ref={sidebarRef}
-      className="w-64 h-full bg-white border-r border-gray-200 flex flex-col"
+      className="sidebar w-64 h-full bg-white border-r border-gray-200 flex flex-col z-10 pl-4"
     >
       <div className="p-4 border-b border-gray-200">
         <h1 className="text-xl font-bold gradient-text">TreeChat AI</h1>

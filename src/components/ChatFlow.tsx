@@ -6,6 +6,8 @@ import ReactFlow, {
   Edge,
   Node,
   useReactFlow,
+  applyNodeChanges,
+  NodeChange,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import SystemNode from './nodes/SystemNode';
@@ -14,7 +16,7 @@ import { useSessionStore } from '../stores/sessionStore';
 import { useModelStore } from '../stores/modelStore';
 import { ChatNode as ChatNodeType, Session } from '../types';
 import { sendChatRequest, abortRequest } from '../services/apiService';
-import { Share2, DownloadCloud } from 'lucide-react';
+import { Share2, DownloadCloud, LayoutGrid } from 'lucide-react';
 import { exportToMindmap } from '../utils/exportUtils';
 import { gsap } from 'gsap';
 import FileUploadButton from './FileUploadButton';
@@ -36,65 +38,101 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   const [edges, setEdges] = useState<Edge[]>([]);
   const reactFlowInstance = useReactFlow();
   const abortControllerRef = useRef<Record<string, AbortController>>({});
+  const prevNodeCountRef = useRef<number>(0);
+  const [nodeDimensions, setNodeDimensions] = useState<Record<string, { width: number, height: number }>>({});
+  const [autoLayout, setAutoLayout] = useState(true);
 
   const calculateNodeLayout = useCallback(() => {
     if (!session || !session.nodes) return;
 
-    const nodeWidth = 350;
-    const nodeHeight = 250;
-    const horizontalSpacing = 100;
-    const verticalSpacing = 150;
-
+    const defaultNodeWidth = 350;
+    const defaultNodeHeight = 250;
+    const horizontalSpacing = 200;
+    const verticalSpacing = 100;
+    
+    const getNodeDimensions = (nodeId: string) => {
+      return nodeDimensions[nodeId] || { width: defaultNodeWidth, height: defaultNodeHeight };
+    };
+    
+    const nodeHeights = new Map<string, number>();
+    session.nodes.forEach(node => {
+      nodeHeights.set(node.id, getNodeDimensions(node.id).height);
+    });
+    
     const nodePositions = new Map<string, { x: number, y: number }>();
     const nodeMap = new Map<string, ChatNodeType>();
     
-    // Create a map of nodes by ID
     session.nodes.forEach(node => {
       nodeMap.set(node.id, node);
     });
 
-    // First determine the levels of each node (depth in the tree)
     const nodeLevels = new Map<string, number>();
     const determineLevel = (nodeId: string, level: number) => {
       nodeLevels.set(nodeId, level);
       
-      // Find all children
       const children = session.nodes.filter(n => n.parentId === nodeId);
       children.forEach(child => {
         determineLevel(child.id, level + 1);
       });
     };
 
-    // Start with the system node (root)
     const systemNode = session.nodes.find(n => n.type === 'system');
     if (systemNode) {
       determineLevel(systemNode.id, 0);
     }
 
-    // Group nodes by level
-    const nodesByLevel = new Map<number, string[]>();
-    nodeLevels.forEach((level, nodeId) => {
-      if (!nodesByLevel.has(level)) {
-        nodesByLevel.set(level, []);
-      }
-      nodesByLevel.get(level)?.push(nodeId);
-    });
-
-    // Calculate horizontal position for each node
-    let maxY = 0;
-    nodesByLevel.forEach((nodeIds, level) => {
-      const levelWidth = nodeIds.length * nodeWidth + (nodeIds.length - 1) * horizontalSpacing;
-      const startX = -levelWidth / 2;
+    const subtreeWidths = new Map<string, number>();
+    const calculateSubtreeWidth = (nodeId: string): number => {
+      const children = session.nodes.filter(n => n.parentId === nodeId);
+      const nodeDim = getNodeDimensions(nodeId);
       
-      nodeIds.forEach((nodeId, index) => {
-        const x = startX + index * (nodeWidth + horizontalSpacing);
-        const y = level * (nodeHeight + verticalSpacing);
-        nodePositions.set(nodeId, { x, y });
-        maxY = Math.max(maxY, y);
-      });
-    });
+      if (children.length === 0) {
+        subtreeWidths.set(nodeId, nodeDim.width);
+        return nodeDim.width;
+      }
+      
+      const childrenWidth = children.reduce((total, child, index) => {
+        const width = calculateSubtreeWidth(child.id);
+        return total + width + (index < children.length - 1 ? horizontalSpacing : 0);
+      }, 0);
+      
+      const subtreeWidth = Math.max(nodeDim.width, childrenWidth);
+      subtreeWidths.set(nodeId, subtreeWidth);
+      return subtreeWidth;
+    };
 
-    // Generate React Flow nodes
+    if (systemNode) {
+      calculateSubtreeWidth(systemNode.id);
+    }
+
+    const levelHeights = new Map<number, number>();
+    
+    const calculateNodePosition = (nodeId: string, startX: number, level: number, startY: number) => {
+      const nodeDim = getNodeDimensions(nodeId);
+      const width = subtreeWidths.get(nodeId) || nodeDim.width;
+      const height = nodeHeights.get(nodeId) || nodeDim.height;
+      const x = startX + width / 2 - nodeDim.width / 2;
+      const y = startY;
+      
+      nodePositions.set(nodeId, { x, y });
+      
+      const nextLevelY = y + height + verticalSpacing;
+      
+      const children = session.nodes.filter(n => n.parentId === nodeId);
+      let childStartX = startX;
+      
+      children.forEach(child => {
+        const childWidth = subtreeWidths.get(child.id) || getNodeDimensions(child.id).width;
+        calculateNodePosition(child.id, childStartX, level + 1, nextLevelY);
+        childStartX += childWidth + horizontalSpacing;
+      });
+    };
+
+    if (systemNode) {
+      const rootWidth = subtreeWidths.get(systemNode.id) || getNodeDimensions(systemNode.id).width;
+      calculateNodePosition(systemNode.id, -rootWidth / 2, 0, 0);
+    }
+
     const reactFlowNodes = session.nodes.map(node => {
       const position = nodePositions.get(node.id) || { x: 0, y: 0 };
       return {
@@ -115,7 +153,6 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
       };
     });
 
-    // Generate React Flow edges
     const reactFlowEdges = session.nodes
       .filter(node => node.parentId)
       .map(node => ({
@@ -128,21 +165,59 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
     setNodes(reactFlowNodes);
     setEdges(reactFlowEdges);
-
-    // Center the view on the first initialization
-    if (reactFlowInstance && reactFlowNodes.length > 0) {
-      setTimeout(() => {
-        reactFlowInstance.fitView({ padding: 0.2 });
-      }, 100);
-    }
-  }, [session, reactFlowInstance]);
+  }, [session, nodeDimensions]);
 
   useEffect(() => {
-    calculateNodeLayout();
-  }, [calculateNodeLayout, session?.nodes]);
+    if (autoLayout) {
+      calculateNodeLayout();
+    }
+  }, [calculateNodeLayout, session?.nodes, autoLayout]);
+
+  useEffect(() => {
+    if (!session?.nodes?.length) return;
+    
+    const resizeObserver = new ResizeObserver(entries => {
+      const newDimensions: Record<string, { width: number, height: number }> = {...nodeDimensions};
+      let didUpdate = false;
+      
+      entries.forEach(entry => {
+        const nodeElement = entry.target as HTMLElement;
+        const nodeId = nodeElement.getAttribute('data-id');
+        
+        if (nodeId) {
+          const { width, height } = entry.contentRect;
+          
+          if (
+            !newDimensions[nodeId] || 
+            Math.abs(newDimensions[nodeId].width - width) > 5 || 
+            Math.abs(newDimensions[nodeId].height - height) > 5
+          ) {
+            newDimensions[nodeId] = { width, height };
+            didUpdate = true;
+          }
+        }
+      });
+      
+      if (didUpdate) {
+        setNodeDimensions(newDimensions);
+      }
+    });
+    
+    setTimeout(() => {
+      document.querySelectorAll('.react-flow__node').forEach(node => {
+        resizeObserver.observe(node);
+      });
+    }, 300);
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [session?.nodes]);
 
   const handleAddChildNode = async (parentId: string) => {
     if (!session || !defaultModelId) return;
+    
+    setAutoLayout(false);
     
     const parentNode = session.nodes.find(n => n.id === parentId);
     if (!parentNode) return;
@@ -160,6 +235,10 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     };
 
     addNodeToSession(sessionId, newNode);
+    
+    setTimeout(() => {
+      setAutoLayout(true);
+    }, 500);
   };
 
   const handleEditNode = (nodeId: string, content: string, type: 'user' | 'assistant' | 'system') => {
@@ -204,16 +283,13 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     const model = models.find(m => m.id === node.modelId);
     if (!model) return;
     
-    // Cancel previous request if exists
     if (abortControllerRef.current[nodeId]) {
       abortControllerRef.current[nodeId].abort();
     }
     
-    // Create new abort controller
     const abortController = new AbortController();
     abortControllerRef.current[nodeId] = abortController;
     
-    // Update node to show streaming
     updateNodeInSession(sessionId, {
       ...node,
       assistantMessage: "",
@@ -222,18 +298,15 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     });
     
     try {
-      // Find the system node content
       const systemNode = session.nodes.find(n => n.type === 'system');
       const systemPrompt = systemNode?.userMessage || model.defaultSystemPrompt;
       
-      // Get the parent messages for context if this is not a direct child of system
       const messages = [];
       
       if (systemPrompt) {
-        messages.push({ role: 'system', content: systemPrompt });
+        messages.push({ role: 'system' as const, content: systemPrompt });
       }
       
-      // Get the parent message chain
       let currentParentId = node.parentId;
       const messageChain = [];
       
@@ -248,16 +321,13 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         currentParentId = parentNode?.parentId || null;
       }
       
-      // Add the message chain to the messages array
       messageChain.forEach(msg => {
-        if (msg.user) messages.push({ role: 'user', content: msg.user });
-        if (msg.assistant) messages.push({ role: 'assistant', content: msg.assistant });
+        if (msg.user) messages.push({ role: 'user' as const, content: msg.user });
+        if (msg.assistant) messages.push({ role: 'assistant' as const, content: msg.assistant });
       });
       
-      // Add the current user message
-      messages.push({ role: 'user', content: node.userMessage });
+      messages.push({ role: 'user' as const, content: node.userMessage });
       
-      // Start streaming
       let accumulatedResponse = '';
       
       await sendChatRequest({
@@ -276,7 +346,6 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         }
       });
       
-      // Update with final response
       updateNodeInSession(sessionId, {
         ...node,
         assistantMessage: accumulatedResponse,
@@ -286,7 +355,6 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     } catch (error: any) {
       console.error('Chat request failed:', error);
       
-      // Handle errors
       updateNodeInSession(sessionId, {
         ...node,
         isStreaming: false,
@@ -338,15 +406,21 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     exportToMindmap(session);
   };
 
+  const handleReorganizeLayout = useCallback(() => {
+    calculateNodeLayout();
+    setTimeout(() => {
+      //reactFlowInstance.fitView({ padding: 0.2 });
+    }, 50);
+  }, [calculateNodeLayout, reactFlowInstance]);
+
   useEffect(() => {
-    // Initialize with system node if session is empty
     if (session && session.nodes.length === 0 && models.length > 0) {
       const systemNode: ChatNodeType = {
         id: crypto.randomUUID(),
         parentId: null,
         type: 'system',
         userMessage: models[0].defaultSystemPrompt,
-        assistantMessage: "", // Not used for system nodes
+        assistantMessage: "",
         modelId: models[0].id,
         temperature: 0.7,
         maxTokens: 2048,
@@ -360,7 +434,6 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   const handleUploadComplete = (extractedText: string) => {
     if (!session || !defaultModelId) return;
     
-    // Find the system node
     const systemNode = session.nodes.find(n => n.type === 'system');
     if (!systemNode) return;
 
@@ -405,10 +478,25 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         maxZoom={2}
         attributionPosition="bottom-left"
         proOptions={{ hideAttribution: true }}
+        nodesDraggable={true}
+        elementsSelectable={true}
+        fitView={false}
+        defaultEdgeOptions={{ type: 'smoothstep' }}
+        onNodesChange={(changes: NodeChange[]) => setNodes(nds => applyNodeChanges(changes, nds))}
       >
         <Background color="#aaa" gap={16} />
         <Controls />
       </ReactFlow>
+      
+      <div className="absolute bottom-4 right-4 z-10">
+        <button 
+          className="flex items-center justify-center bg-indigo-600 text-white p-3 rounded-full hover:bg-indigo-700 transition-colors shadow-md"
+          onClick={handleReorganizeLayout}
+          title="重新排布节点"
+        >
+          <LayoutGrid size={20} />
+        </button>
+      </div>
     </div>
   );
 };
