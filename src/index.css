@@ -56,8 +56,12 @@ body {
 }
 
 .node-content {
-  max-width: 500px;
+  max-width: 300px !important;
   min-width: 300px;
+  width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow: hidden;
 }
 
 .sidebar-session {
@@ -74,6 +78,21 @@ body {
 
 .md-preview {
   @apply prose prose-indigo max-w-none;
+  max-width: 100% !important;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.md-preview pre, .md-preview code {
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.md-preview table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /* Prevent scrollbar from taking space */

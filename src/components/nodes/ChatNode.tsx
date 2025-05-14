@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position } from 'reactflow';
 import { MdPreview } from 'md-editor-rt';
 import 'md-editor-rt/lib/preview.css';
@@ -31,6 +31,35 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
       );
     }
   }, []);
+
+  // 监控并限制节点宽度
+  useEffect(() => {
+    if (!nodeRef.current) return;
+    
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        const element = entry.target as HTMLDivElement;
+        if (element.offsetWidth > 500) {
+          element.style.width = '500px';
+          element.style.maxWidth = '500px';
+          console.log(`Force resizing Node ${id} from ${element.offsetWidth}px to 500px`);
+        }
+      }
+    });
+    
+    resizeObserver.observe(nodeRef.current);
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [id]);
+  
+  // Debug log for width changes
+  useEffect(() => {
+    if (nodeRef.current && node.assistantMessage) {
+      console.log(`Node ${id} width: ${nodeRef.current.offsetWidth}px`);
+    }
+  }, [node.assistantMessage, id]);
 
   useEffect(() => {
     // Only update userMessage from node if not editing or current input is empty
@@ -83,10 +112,32 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
     }
   };
 
+  // 阻止滚轮事件冒泡，仅在消息区域内滚动
+  const handleWheel = useCallback((e: WheelEvent) => {
+    // 检查事件是否发生在节点容器内
+    if (nodeRef.current && nodeRef.current.contains(e.target as Node)) {
+      e.stopPropagation();
+    }
+  }, []);
+
+  useEffect(() => {
+    // 使用捕获阶段监听滚轮事件
+    const node = nodeRef.current;
+    if (node) {
+      node.addEventListener('wheel', handleWheel, { capture: true });
+    }
+
+    return () => {
+      if (node) {
+        node.removeEventListener('wheel', handleWheel, { capture: true });
+      }
+    };
+  }, [handleWheel]);
+
   return (
     <div 
       ref={nodeRef}
-      className="node-content bg-white rounded-lg shadow-md overflow-hidden max-w-[10px] w-full"
+      className="node-content bg-white rounded-lg shadow-md overflow-hidden"
     >
       <Handle
         type="target"
@@ -167,7 +218,12 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         </div>
       )}
 
-      <div className="user-message p-3 border-b border-gray-100">
+      <div 
+        className="user-message p-3 border-b border-gray-100"
+        onWheel={(e) => {
+          e.stopPropagation();
+        }}
+      >
         {isEditingUser ? (
           <div className="relative">
             <textarea
@@ -177,7 +233,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
                 setUserMessage(e.target.value);
                 onEdit(node.id, e.target.value, 'user');
               }}
-              className="w-full p-2 border border-gray-300 rounded-md min-h-[120px] pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-2 border border-gray-300 rounded-md min-h-[30px] pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Type your message..."
               onKeyDown={handleKeyDown}
             />
@@ -210,7 +266,12 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         )}
       </div>
 
-      <div className="assistant-message p-3 relative">
+      <div 
+        className="assistant-message p-3 relative"
+        onWheel={(e) => {
+          e.stopPropagation();
+        }}
+      >
         {node.isStreaming ? (
           <div className="flex items-center space-x-2 text-gray-500 mb-2">
             <div className="animate-pulse">AI is thinking...</div>
@@ -226,13 +287,20 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
 
         {node.assistantMessage ? (
           <div className="relative group">
-            <MdPreview 
-              editorId={`preview-${node.id}`}
-              modelValue={node.assistantMessage}
-              className="md-preview overflow-auto break-words"
-              style={{ backgroundColor: 'transparent', maxWidth: '100%' }}
-              previewTheme="vuepress"
-            />
+            <div 
+              className="preview-container"
+              onWheel={(e: React.WheelEvent) => {
+                e.stopPropagation();
+              }}
+            >
+              <MdPreview 
+                editorId={`preview-${node.id}`}
+                modelValue={node.assistantMessage}
+                className="md-preview overflow-auto break-words"
+                style={{ backgroundColor: 'transparent', maxWidth: '100%' }}
+                previewTheme="vuepress"
+              />
+            </div>
             <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 className="p-1 text-gray-500 hover:text-indigo-600 transition-colors"

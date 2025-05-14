@@ -30,6 +30,13 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
     }
   }, []);
 
+  // Debug log for width changes
+  useEffect(() => {
+    if (nodeRef.current && node.userMessage) {
+      console.log(`System Node ${id} width: ${nodeRef.current.offsetWidth}px`);
+    }
+  }, [node.userMessage, id]);
+
   useEffect(() => {
     setSystemPrompt(node.userMessage || '');
   }, [node.userMessage]);
@@ -148,8 +155,9 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
           />
         ) : (
           <div 
-            className="min-h-[60px] cursor-pointer" 
+            className="min-h-[60px] cursor-pointer overflow-wrap-break-word" 
             onClick={handleEdit}
+            style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}
           >
             {node.userMessage || (
               <span className="text-gray-400 italic">
