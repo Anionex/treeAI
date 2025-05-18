@@ -31,8 +31,16 @@ body {
   @apply bg-indigo-50 border border-indigo-200;
 }
 
+@font-face {
+  font-family: 'KingHwa_OldSong';
+  src: url('./assets/fonts/KingHwa_OldSong.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 .user-message {
   @apply bg-white border border-gray-200;
+  font-size: 18px;
+  font-family: 'KingHwa_OldSong';
 }
 
 .assistant-message {
