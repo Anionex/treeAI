@@ -31,6 +31,7 @@ export interface ChatNode {
   createdAt: string;
   isStreaming?: boolean;
   error?: string;
+  position?: NodePosition;
 }
 
 export interface Position {
@@ -60,4 +61,9 @@ export interface FileExtractResult {
   text: string;
   filename: string;
   mimeType: string;
+}
+
+export interface NodePosition {
+  x: number;
+  y: number;
 }

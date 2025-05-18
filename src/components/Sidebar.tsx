@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSessionStore } from '../stores/sessionStore';
-import { Search, Plus, Settings, Trash2, Edit, X } from 'lucide-react';
+import { Search, Plus, Settings, Trash2, Edit, X, ChevronLeft } from 'lucide-react';
 import { gsap } from 'gsap';
 
 interface SidebarProps {
   onModelManagerClick: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onToggleCollapse }) => {
   const { 
     sessions, 
     currentSessionId, 
@@ -72,11 +74,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick }) => {
     }
   };
 
+  if (collapsed) return null;
+
   return (
     <div 
       ref={sidebarRef}
-      className="sidebar w-64 h-full bg-white border-r border-gray-200 flex flex-col z-10 pl-4"
+      className="sidebar w-64 h-full bg-white border-r border-gray-200 flex flex-col z-10 pl-4 relative"
     >
+      <button 
+        className="absolute -right-3 top-4 bg-white p-1 rounded-full border border-gray-200 shadow-md z-20"
+        onClick={onToggleCollapse}
+      >
+        <ChevronLeft size={16} />
+      </button>
+
       <div className="p-4 border-b border-gray-200">
         <h1 className="text-xl font-bold gradient-text">TreeChat AI</h1>
       </div>

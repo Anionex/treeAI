@@ -6,9 +6,11 @@ import { useSessionStore } from './stores/sessionStore';
 import { useModelStore } from './stores/modelStore';
 import { useDatabaseContext } from './context/DatabaseContext';
 import { Session } from './types';
+import { ChevronRight } from 'lucide-react';
 
 const App: React.FC = () => {
   const [showModelManager, setShowModelManager] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { currentSessionId, setCurrentSessionId } = useSessionStore();
   const { loadSessions, loadModels } = useDatabaseContext();
   const { sessions } = useSessionStore();
@@ -31,6 +33,10 @@ const App: React.FC = () => {
     }
   }, [sessions, currentSessionId, setCurrentSessionId, isLoading]);
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
@@ -44,8 +50,19 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
+      {sidebarCollapsed && (
+        <button 
+          className="absolute top-4 left-4 z-20 bg-white p-2 rounded-full shadow-md border border-gray-200"
+          onClick={toggleSidebar}
+        >
+          <ChevronRight size={16} />
+        </button>
+      )}
+      
       <Sidebar 
         onModelManagerClick={() => setShowModelManager(true)} 
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
       />
       <main className="flex-1 overflow-hidden relative">
         {currentSessionId ? (

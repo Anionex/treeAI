@@ -136,8 +136,17 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     }
 
     const reactFlowNodes = session.nodes.map(node => {
-      const existingNode = nodes.find(n => n.id === node.id);
-      const position = existingNode?.position || { x: 0, y: 0 };
+      // 首先查找保存的位置
+      let position: { x: number, y: number };
+      
+      if (node.position) {
+        // 如果节点有保存的位置，使用它
+        position = { x: node.position.x, y: node.position.y };
+      } else {
+        // 否则使用通过算法计算的位置
+        const calculatedPosition = nodePositions.get(node.id);
+        position = calculatedPosition || { x: 0, y: 0 };
+      }
       
       return {
         id: node.id,
@@ -224,6 +233,22 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     const parentNode = session.nodes.find(n => n.id === parentId);
     if (!parentNode) return;
 
+    // 查找父节点的 ReactFlow 节点，获取其位置
+    const parentFlowNode = nodes.find(n => n.id === parentId);
+    let position = { x: 0, y: 0 };
+    
+    if (parentFlowNode) {
+      // 计算子节点的初始位置：父节点下方偏右
+      const siblingCount = nodes.filter(n => 
+        n.data.node.parentId === parentId
+      ).length;
+      
+      position = {
+        x: parentFlowNode.position.x + siblingCount * 100,
+        y: parentFlowNode.position.y + 250
+      };
+    }
+
     const newNode: ChatNodeType = {
       id: crypto.randomUUID(),
       parentId,
@@ -234,6 +259,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
       temperature: parentNode.temperature || 0.7,
       maxTokens: parentNode.maxTokens || 2048,
       createdAt: new Date().toISOString(),
+      position // 保存初始位置
     };
 
     addNodeToSession(sessionId, newNode);
@@ -625,6 +651,22 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         fitView={false}
         defaultEdgeOptions={{ type: 'smoothstep' }}
         onNodesChange={(changes: NodeChange[]) => setNodes(nds => applyNodeChanges(changes, nds))}
+        onNodeDragStop={(event, node) => {
+          // 节点拖动结束后保存位置
+          if (!session) return;
+          
+          const chatNode = session.nodes.find(n => n.id === node.id);
+          if (!chatNode) return;
+          
+          // 更新节点位置
+          updateNodeInSession(sessionId, {
+            ...chatNode,
+            position: {
+              x: node.position.x,
+              y: node.position.y
+            }
+          });
+        }}
       >
         <Background color="#aaa" gap={16} />
         <Controls />
