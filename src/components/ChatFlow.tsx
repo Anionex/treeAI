@@ -496,101 +496,12 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   useEffect(() => {
     if (!session?.nodes) return;
     
-    // 获取当前显示的节点ID列表
-    const currentNodeIds = new Set(nodes.map(n => n.id));
-    
-    // 检查是否有新增节点（会话节点ID中存在但当前节点ID中不存在）
-    const newNodes = session.nodes.filter(node => !currentNodeIds.has(node.id));
-    
-    // 如果有新增节点，为它们计算一个合适的位置，而不是重排整个布局
-    if (newNodes.length > 0) {
-      // 创建所有节点的副本，并为新节点计算位置
-      const updatedNodes = [...nodes];
-      
-      newNodes.forEach(newNode => {
-        // 找到父节点
-        const parentNode = newNode.parentId 
-          ? nodes.find(n => n.id === newNode.parentId) 
-          : null;
-        
-        if (!parentNode) {
-          // 如果没有父节点或找不到父节点，将新节点放在中心位置
-          updatedNodes.push({
-            id: newNode.id,
-            type: newNode.type,
-            position: { x: 0, y: 0 },
-            data: { 
-              node: newNode,
-              streamingResponse: streamingResponses[newNode.id] || null,
-              onAddChild: handleAddChildNode,
-              onEdit: handleEditNode,
-              onDelete: handleDeleteNode,
-              onRetry: handleRetryNode,
-              onModelChange: handleModelChange,
-              onTemperatureChange: handleTemperatureChange,
-              onMaxTokensChange: handleMaxTokensChange,
-              isRoot: newNode.type === 'system'
-            }
-          });
-        } else {
-          // 计算新节点位置：放在父节点正下方，稍微偏右一点
-          // 首先查找父节点下已有的子节点数量
-          const siblingCount = nodes.filter(n => 
-            n.data.node.parentId === newNode.parentId
-          ).length;
-          
-          const parentPos = parentNode.position;
-          const offsetX = siblingCount * 100; // 每个子节点向右偏移100px
-          
-          updatedNodes.push({
-            id: newNode.id,
-            type: newNode.type,
-            position: { 
-              x: parentPos.x + offsetX, 
-              y: parentPos.y + 250 // 默认垂直距离250px
-            },
-            data: { 
-              node: newNode,
-              streamingResponse: streamingResponses[newNode.id] || null,
-              onAddChild: handleAddChildNode,
-              onEdit: handleEditNode,
-              onDelete: handleDeleteNode,
-              onRetry: handleRetryNode,
-              onModelChange: handleModelChange,
-              onTemperatureChange: handleTemperatureChange,
-              onMaxTokensChange: handleMaxTokensChange,
-              isRoot: newNode.type === 'system'
-            }
-          });
-        }
-      });
-      
-      // 更新节点但保留边的计算逻辑
-      setNodes(updatedNodes);
-      
-      const reactFlowEdges = session.nodes
-        .filter(node => node.parentId)
-        .map(node => ({
-          id: `e-${node.parentId}-${node.id}`,
-          source: node.parentId!,
-          target: node.id,
-          type: 'smoothstep',
-          animated: false,
-        }));
-      
-      setEdges(reactFlowEdges);
-      return;
-    }
-    
-    // 正常情况下，只更新节点数据，保留位置
+    // 创建节点对象，优先使用保存的位置
     const reactFlowNodes = session.nodes.map(node => {
-      const existingNode = nodes.find(n => n.id === node.id);
-      const position = existingNode?.position || { x: 0, y: 0 };
-      
       return {
         id: node.id,
         type: node.type,
-        position,
+        position: node.position || { x: 0, y: 0 }, // 如果没有保存位置则使用默认值
         data: { 
           node,
           streamingResponse: streamingResponses[node.id] || null,
@@ -616,9 +527,63 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         animated: false,
       }));
 
-    setNodes(reactFlowNodes);
-    setEdges(reactFlowEdges);
-  }, [session?.nodes]);
+    // 清除之前的节点和边
+    setNodes([]);
+    setEdges([]);
+    
+    // 设置新的节点和边
+    setTimeout(() => {
+      setNodes(reactFlowNodes);
+      setEdges(reactFlowEdges);
+    }, 50);
+  }, [session?.id]); // 只在会话ID变化时执行，避免循环渲染
+
+  // 在用户离开会话或组件卸载时保存节点位置
+  useEffect(() => {
+    return () => {
+      // 组件卸载时保存所有节点位置
+      saveAllNodePositions();
+    };
+  }, []);
+
+  // 当会话ID变更时，保存上一个会话的节点位置
+  useEffect(() => {
+    return () => {
+      if (session) {
+        saveAllNodePositions();
+      }
+    };
+  }, [sessionId]);
+
+  // 保存所有节点位置的函数
+  const saveAllNodePositions = useCallback(() => {
+    if (!session) return;
+    
+    // 获取当前节点的位置信息
+    const nodesWithPosition = nodes.map(node => {
+      const chatNode = session.nodes.find(n => n.id === node.id);
+      if (!chatNode) return null;
+      
+      return {
+        ...chatNode,
+        position: {
+          x: node.position.x,
+          y: node.position.y
+        }
+      };
+    }).filter(Boolean) as ChatNodeType[];
+    
+    // 更新会话中的节点
+    if (nodesWithPosition.length > 0) {
+      const updatedSession = {
+        ...session,
+        nodes: nodesWithPosition,
+        updatedAt: new Date().toISOString()
+      };
+      
+      updateSession(updatedSession);
+    }
+  }, [session, nodes, updateSession]);
 
   if (!session) {
     return <div>Session not found</div>;

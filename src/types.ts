@@ -29,9 +29,13 @@ export interface ChatNode {
   temperature: number;
   maxTokens: number;
   createdAt: string;
+  updatedAt?: string;
   isStreaming?: boolean;
   error?: string;
-  position?: NodePosition;
+  position?: {
+    x: number;
+    y: number;
+  };
 }
 
 export interface Position {
