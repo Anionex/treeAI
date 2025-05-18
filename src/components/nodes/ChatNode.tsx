@@ -12,7 +12,7 @@ interface ChatNodeProps {
 }
 
 const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
-  const { node, onEdit, onAddChild, onDelete, onRetry, onModelChange, onTemperatureChange, onMaxTokensChange } = data;
+  const { node, streamingResponse, onEdit, onAddChild, onDelete, onRetry, onModelChange, onTemperatureChange, onMaxTokensChange } = data;
   const [userMessage, setUserMessage] = useState(node.userMessage || '');
   const [isEditingUser, setIsEditingUser] = useState(!node.userMessage);
   const [showSettings, setShowSettings] = useState(false);
@@ -222,7 +222,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
       )}
 
       <div 
-        className="user-message p-3 border-b border-gray-100"
+        className="user-message border-b border-gray-100"
         onWheel={(e) => {
           e.stopPropagation();
         }}
@@ -234,9 +234,12 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
               value={userMessage}
               onChange={(e) => {
                 setUserMessage(e.target.value);
-                onEdit(node.id, e.target.value, 'user');
+                onEdit(node.id, e.target.value, 'user', true);
               }}
-              className="w-full p-2 border border-gray-300 rounded-md min-h-[30px] pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onBlur={() => {
+                onEdit(node.id, userMessage, 'user', false);
+              }}
+              className="w-full p-2 border border-none rounded-md min-h-[100px] pr-10 focus:outline-none "
               placeholder="Type your message..."
               onKeyDown={handleKeyDown}
             />
@@ -288,7 +291,24 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
           </div>
         ) : null}
 
-        {node.assistantMessage ? (
+        {(streamingResponse !== null && node.isStreaming) ? (
+          <div className="relative group">
+            <div 
+              className="preview-container"
+              onWheel={(e: React.WheelEvent) => {
+                e.stopPropagation();
+              }}
+            >
+              <MdPreview 
+                editorId={`preview-${node.id}`}
+                modelValue={streamingResponse}
+                className="md-preview overflow-auto break-words"
+                style={{ backgroundColor: 'transparent', maxWidth: '100%' }}
+                previewTheme="vuepress"
+              />
+            </div>
+          </div>
+        ) : node.assistantMessage ? (
           <div className="relative group">
             <div 
               className="preview-container"

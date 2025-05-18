@@ -41,6 +41,8 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   const prevNodeCountRef = useRef<number>(0);
   const [nodeDimensions, setNodeDimensions] = useState<Record<string, { width: number, height: number }>>({});
   const [autoLayout, setAutoLayout] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [streamingResponses, setStreamingResponses] = useState<Record<string, string>>({});
 
   const calculateNodeLayout = useCallback(() => {
     if (!session || !session.nodes) return;
@@ -134,13 +136,16 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     }
 
     const reactFlowNodes = session.nodes.map(node => {
-      const position = nodePositions.get(node.id) || { x: 0, y: 0 };
+      const existingNode = nodes.find(n => n.id === node.id);
+      const position = existingNode?.position || { x: 0, y: 0 };
+      
       return {
         id: node.id,
         type: node.type,
         position,
         data: { 
           node,
+          streamingResponse: streamingResponses[node.id] || null,
           onAddChild: handleAddChildNode,
           onEdit: handleEditNode,
           onDelete: handleDeleteNode,
@@ -165,13 +170,12 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
     setNodes(reactFlowNodes);
     setEdges(reactFlowEdges);
-  }, [session, nodeDimensions]);
+  }, [session, nodeDimensions, streamingResponses]);
 
   useEffect(() => {
-    if (autoLayout) {
-      calculateNodeLayout();
-    }
-  }, [calculateNodeLayout, session?.nodes, autoLayout]);
+    // 不再根据任何状态自动触发calculateNodeLayout
+    // 仅在手动点击重排按钮时通过handleReorganizeLayout调用
+  }, []);
 
   useEffect(() => {
     if (!session?.nodes?.length) return;
@@ -217,8 +221,6 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   const handleAddChildNode = async (parentId: string) => {
     if (!session || !defaultModelId) return;
     
-    setAutoLayout(false);
-    
     const parentNode = session.nodes.find(n => n.id === parentId);
     if (!parentNode) return;
 
@@ -235,13 +237,9 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     };
 
     addNodeToSession(sessionId, newNode);
-    
-    setTimeout(() => {
-      setAutoLayout(true);
-    }, 500);
   };
 
-  const handleEditNode = (nodeId: string, content: string, type: 'user' | 'assistant' | 'system') => {
+  const handleEditNode = (nodeId: string, content: string, type: 'user' | 'assistant' | 'system', isInputting = false) => {
     if (!session) return;
     
     const node = session.nodes.find(n => n.id === nodeId);
@@ -250,20 +248,11 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     let updatedNode: ChatNodeType;
     
     if (type === 'system') {
-      updatedNode = {
-        ...node,
-        userMessage: content
-      };
+      updatedNode = { ...node, userMessage: content };
     } else if (type === 'user') {
-      updatedNode = {
-        ...node,
-        userMessage: content
-      };
+      updatedNode = { ...node, userMessage: content };
     } else {
-      updatedNode = {
-        ...node,
-        assistantMessage: content
-      };
+      updatedNode = { ...node, assistantMessage: content };
     }
 
     updateNodeInSession(sessionId, updatedNode);
@@ -272,6 +261,11 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   const handleDeleteNode = (nodeId: string) => {
     if (!session) return;
     deleteNodeFromSession(sessionId, nodeId);
+    
+    // 删除后不需要手动计算布局，useEffect会处理
+    // setTimeout(() => {
+    //   calculateNodeLayout();
+    // }, 100);
   };
 
   const handleRetryNode = async (nodeId: string) => {
@@ -290,12 +284,18 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     const abortController = new AbortController();
     abortControllerRef.current[nodeId] = abortController;
     
+    // 只更新streaming状态，不更新内容
     updateNodeInSession(sessionId, {
       ...node,
-      assistantMessage: "",
       isStreaming: true,
       error: undefined
     });
+    
+    // 初始化流式响应
+    setStreamingResponses(prev => ({
+      ...prev,
+      [nodeId]: ""
+    }));
     
     try {
       const systemNode = session.nodes.find(n => n.type === 'system');
@@ -338,18 +338,26 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         signal: abortController.signal,
         onChunk: (chunk) => {
           accumulatedResponse += chunk;
-          updateNodeInSession(sessionId, {
-            ...node,
-            assistantMessage: accumulatedResponse,
-            isStreaming: true
-          });
+          // 只更新流式响应状态，不更新节点
+          setStreamingResponses(prev => ({
+            ...prev,
+            [nodeId]: accumulatedResponse
+          }));
         }
       });
       
+      // 完成后再一次性更新节点内容
       updateNodeInSession(sessionId, {
         ...node,
         assistantMessage: accumulatedResponse,
         isStreaming: false
+      });
+      
+      // 清除流式状态
+      setStreamingResponses(prev => {
+        const newState = {...prev};
+        delete newState[nodeId];
+        return newState;
       });
       
     } catch (error: any) {
@@ -359,6 +367,13 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         ...node,
         isStreaming: false,
         error: error.message || 'Failed to get response'
+      });
+      
+      // 清除流式状态
+      setStreamingResponses(prev => {
+        const newState = {...prev};
+        delete newState[nodeId];
+        return newState;
       });
     } finally {
       delete abortControllerRef.current[nodeId];
@@ -451,6 +466,133 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
     addNodeToSession(sessionId, newNode);
   };
+
+  useEffect(() => {
+    if (!session?.nodes) return;
+    
+    // 获取当前显示的节点ID列表
+    const currentNodeIds = new Set(nodes.map(n => n.id));
+    
+    // 检查是否有新增节点（会话节点ID中存在但当前节点ID中不存在）
+    const newNodes = session.nodes.filter(node => !currentNodeIds.has(node.id));
+    
+    // 如果有新增节点，为它们计算一个合适的位置，而不是重排整个布局
+    if (newNodes.length > 0) {
+      // 创建所有节点的副本，并为新节点计算位置
+      const updatedNodes = [...nodes];
+      
+      newNodes.forEach(newNode => {
+        // 找到父节点
+        const parentNode = newNode.parentId 
+          ? nodes.find(n => n.id === newNode.parentId) 
+          : null;
+        
+        if (!parentNode) {
+          // 如果没有父节点或找不到父节点，将新节点放在中心位置
+          updatedNodes.push({
+            id: newNode.id,
+            type: newNode.type,
+            position: { x: 0, y: 0 },
+            data: { 
+              node: newNode,
+              streamingResponse: streamingResponses[newNode.id] || null,
+              onAddChild: handleAddChildNode,
+              onEdit: handleEditNode,
+              onDelete: handleDeleteNode,
+              onRetry: handleRetryNode,
+              onModelChange: handleModelChange,
+              onTemperatureChange: handleTemperatureChange,
+              onMaxTokensChange: handleMaxTokensChange,
+              isRoot: newNode.type === 'system'
+            }
+          });
+        } else {
+          // 计算新节点位置：放在父节点正下方，稍微偏右一点
+          // 首先查找父节点下已有的子节点数量
+          const siblingCount = nodes.filter(n => 
+            n.data.node.parentId === newNode.parentId
+          ).length;
+          
+          const parentPos = parentNode.position;
+          const offsetX = siblingCount * 100; // 每个子节点向右偏移100px
+          
+          updatedNodes.push({
+            id: newNode.id,
+            type: newNode.type,
+            position: { 
+              x: parentPos.x + offsetX, 
+              y: parentPos.y + 250 // 默认垂直距离250px
+            },
+            data: { 
+              node: newNode,
+              streamingResponse: streamingResponses[newNode.id] || null,
+              onAddChild: handleAddChildNode,
+              onEdit: handleEditNode,
+              onDelete: handleDeleteNode,
+              onRetry: handleRetryNode,
+              onModelChange: handleModelChange,
+              onTemperatureChange: handleTemperatureChange,
+              onMaxTokensChange: handleMaxTokensChange,
+              isRoot: newNode.type === 'system'
+            }
+          });
+        }
+      });
+      
+      // 更新节点但保留边的计算逻辑
+      setNodes(updatedNodes);
+      
+      const reactFlowEdges = session.nodes
+        .filter(node => node.parentId)
+        .map(node => ({
+          id: `e-${node.parentId}-${node.id}`,
+          source: node.parentId!,
+          target: node.id,
+          type: 'smoothstep',
+          animated: false,
+        }));
+      
+      setEdges(reactFlowEdges);
+      return;
+    }
+    
+    // 正常情况下，只更新节点数据，保留位置
+    const reactFlowNodes = session.nodes.map(node => {
+      const existingNode = nodes.find(n => n.id === node.id);
+      const position = existingNode?.position || { x: 0, y: 0 };
+      
+      return {
+        id: node.id,
+        type: node.type,
+        position,
+        data: { 
+          node,
+          streamingResponse: streamingResponses[node.id] || null,
+          onAddChild: handleAddChildNode,
+          onEdit: handleEditNode,
+          onDelete: handleDeleteNode,
+          onRetry: handleRetryNode,
+          onModelChange: handleModelChange,
+          onTemperatureChange: handleTemperatureChange,
+          onMaxTokensChange: handleMaxTokensChange,
+          isRoot: node.type === 'system'
+        }
+      };
+    });
+
+    const reactFlowEdges = session.nodes
+      .filter(node => node.parentId)
+      .map(node => ({
+        id: `e-${node.parentId}-${node.id}`,
+        source: node.parentId!,
+        target: node.id,
+        type: 'smoothstep',
+        animated: false,
+      }));
+
+    setNodes(reactFlowNodes);
+    setEdges(reactFlowEdges);
+  }, [session?.nodes]);
 
   if (!session) {
     return <div>Session not found</div>;

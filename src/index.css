@@ -38,7 +38,7 @@ body {
 .assistant-message {
   @apply bg-blue-50 border border-blue-200;
   overflow-y: auto;
-  max-height: 600px;
+  max-height: 400px;
   scroll-behavior: smooth;
 }
 
