@@ -3,6 +3,16 @@
 ## 项目描述
 TreeChat是一个基于树状结构的对话应用，支持文件上传、多模型管理和会话管理。采用React + TypeScript构建，提供直观的聊天界面和系统交互功能。
 
+# Usage
+
+```
+npm install
+npm run dev
+```
+
+![image](https://github.com/user-attachments/assets/8510a872-a835-4e70-92d6-f96d551ec35d)
+
+
 ## 技术栈
 - 前端框架: React 18
 - 语言: TypeScript
