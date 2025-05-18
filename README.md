@@ -4,6 +4,9 @@
 TreeChat是一个基于树状结构的对话应用，支持文件上传、多模型管理和会话管理。采用React + TypeScript构建，提供直观的聊天界面和系统交互功能。
 
 # Usage
+1. 确保已安装Node.js 18+
+2. 克隆项目仓库
+3. 安装依赖
 
 ```
 npm install
@@ -30,17 +33,6 @@ npm run dev
 - 数据库上下文 (DatabaseContext)
 - 实用工具集 (fileUtils, exportUtils)
 
-## 安装指南
-1. 确保已安装Node.js 18+
-2. 克隆项目仓库
-3. 安装依赖:
-```bash
-npm install
-```
-4. 启动开发服务器:
-```bash
-npm run dev
-```
 
 ## 项目结构
 ```
@@ -69,12 +61,6 @@ src/
     └── fileUtils.ts
 ```
 
-## 开发指南
-1. 代码规范遵循项目中的ESLint配置
-2. 组件开发使用TypeScript严格模式
-3. 状态管理使用自定义Store方案
-4. 样式使用Tailwind CSS工具类优先
-5. 新增功能请先添加类型定义到types.ts
 
 ## 贡献
 欢迎提交Pull Request，请确保代码通过所有检查。
