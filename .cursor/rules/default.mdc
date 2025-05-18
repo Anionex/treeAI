@@ -3,4 +3,147 @@ description:
 globs: 
 alwaysApply: true
 ---
-使用正确的ES模块语法.
+# 项目开发文档
+
+## 1. 项目概述
+
+TreeChat 是一个基于树状结构的对话应用，支持文件上传、多模型管理和会话管理。项目使用 React 18 + TypeScript 构建，采用 Vite 作为构建工具，使用 Tailwind CSS 进行样式设计。
+
+项目主要功能包括：
+- 树状结构对话流（支持分支对话）
+- 文件上传和处理（支持提取文本内容）
+- 多AI模型管理
+- 会话创建与状态管理
+- 导出功能
+
+## 2. 技术栈
+
+- **前端框架**：React 18
+- **语言**：TypeScript
+- **构建工具**：Vite
+- **CSS框架**：Tailwind CSS
+- **状态管理**：Zustand（自定义 Store）
+- **数据存储**：IndexedDB（通过 Dexie.js）
+- **流程图**：ReactFlow
+- **动画**：GSAP
+- **文件处理**：PDF-parse, Mammoth（文档处理）
+- **代码规范**：ESLint
+
+## 3. 项目结构
+
+```
+src/
+├── App.tsx            # 主应用组件
+├── main.tsx           # 应用入口
+├── index.css          # 全局样式
+├── types.ts           # 类型定义
+├── components/        # UI组件
+│   ├── ChatFlow.tsx   # 对话流组件
+│   ├── FileUploadButton.tsx # 文件上传
+│   ├── ModelManager.tsx    # 模型管理
+│   ├── Sidebar.tsx    # 侧边栏
+│   └── nodes/         # 对话节点组件
+├── context/           # 上下文
+│   └── DatabaseContext.tsx
+├── db/                # 数据库相关
+│   └── db.ts
+├── services/          # 服务层
+│   └── apiService.ts  # API请求服务
+├── stores/            # 状态存储
+│   ├── modelStore.ts  # 模型状态管理
+│   └── sessionStore.ts # 会话状态管理
+└── utils/             # 工具函数
+    ├── exportUtils.ts  # 导出功能
+    └── fileUtils.ts    # 文件处理工具
+```
+
+## 4. 核心概念
+
+### 数据模型
+
+项目中定义了几个关键的数据模型，详见 `src/types.ts`：
+
+- **Model**: AI 模型配置，包含名称、API地址、密钥等
+- **Session**: 用户会话，包含一系列对话节点
+- **ChatNode**: 对话节点，可以是系统节点或聊天节点
+- **FileExtractResult**: 文件提取结果，包含文本和元数据
+
+### 状态管理
+
+项目使用 Zustand 进行状态管理，主要有两个 store：
+
+- **sessionStore**: 管理会话状态、对话节点等
+- **modelStore**: 管理 AI 模型配置
+
+### 数据存储
+
+使用 Dexie.js 管理 IndexedDB 数据库存储：
+
+- **sessions** 表: 存储用户会话
+- **models** 表: 存储 AI 模型配置
+
+## 5. 关键功能实现
+
+### 树状对话流程
+
+- 使用 ReactFlow 实现可视化树状对话
+- 通过 `ChatFlow.tsx` 组件管理对话流程
+- 支持添加子节点、编辑、删除节点
+- 自动布局算法在 `calculateNodeLayout` 函数中实现
+
+### 文件处理
+
+- `FileUploadButton.tsx` 处理文件上传界面
+- `fileUtils.ts` 包含从不同文件类型提取文本的逻辑
+- 支持 TXT、PDF、DOCX 和 MD 格式文件
+
+### 模型管理
+
+- `ModelManager.tsx` 实现模型配置界面
+- 通过 `modelStore.ts` 管理模型状态
+- 支持添加、编辑、删除模型配置
+
+### 数据持久化
+
+- 通过 `DatabaseContext.tsx` 提供数据库操作接口
+- 在 `db.ts` 中实现具体的数据库操作
+
+## 6. 开发环境设置
+
+1. 确保已安装 Node.js 18+ 和 npm
+2. 克隆项目仓库
+3. 安装依赖:
+   ```bash
+   npm install
+   ```
+4. 启动开发服务器:
+   ```bash
+   npm run dev
+   ```
+
+## 7. 构建与部署
+
+1. 构建生产版本:
+   ```bash
+   npm run build
+   ```
+2. 预览生产构建:
+   ```bash
+   npm run preview
+   ```
+
+## 8. 注意事项和限制
+
+1. 文件处理功能在实际环境中需要完善，当前版本中 PDF 和 DOCX 处理有待实现
+2. 需正确配置模型API地址和密钥才能使用聊天功能
+3. 项目使用 ES 模块语法，确保导入/导出使用正确语法
+
+## 9. 未来改进方向
+
+1. 完成文件处理功能，包括 PDF 和 DOCX 文本提取
+2. 优化树状对话布局算法
+3. 添加更多导出格式选项
+4. 实现协作功能
+5. 提高大型对话树的性能
+
+

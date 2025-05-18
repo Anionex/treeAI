@@ -33,16 +33,19 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
   }, []);
 
   // 监控并限制节点宽度
+  // 节点最大宽度常量
+  const NODE_MAX_WIDTH = 400;
+
   useEffect(() => {
     if (!nodeRef.current) return;
     
     const resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
         const element = entry.target as HTMLDivElement;
-        if (element.offsetWidth > 500) {
-          element.style.width = '500px';
-          element.style.maxWidth = '500px';
-          console.log(`Force resizing Node ${id} from ${element.offsetWidth}px to 500px`);
+        if (element.offsetWidth > NODE_MAX_WIDTH) {
+          element.style.width = `${NODE_MAX_WIDTH}px`;
+          element.style.maxWidth = `${NODE_MAX_WIDTH}px`;
+          console.log(`Force resizing Node ${id} from ${element.offsetWidth}px to ${NODE_MAX_WIDTH}px`);
         }
       }
     });
