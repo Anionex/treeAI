@@ -215,7 +215,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
               onBlur={() => {
                 onEdit(node.id, userMessage, 'user', false);
               }}
-              className="w-full p-2 border border-none rounded-md min-h-[100px] pr-10 focus:outline-none "
+              className="w-full p-2 border border-none rounded-md pr-10 focus:outline-none min-h-[100px]"
               placeholder="Type your message..."
               onKeyDown={handleKeyDown}
             />
@@ -230,7 +230,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         ) : (
           <div className="relative group">
             <div 
-              className="pr-8 min-h-[160px]"
+              className="pr-8 max-h-[200px] min-h-[80px]"
               onClick={() => setIsEditingUser(true)}
             >
               {node.userMessage || <span className="text-gray-400 italic">Click to add message...</span>}
