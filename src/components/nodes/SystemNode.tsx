@@ -33,7 +33,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
   // Debug log for width changes
   useEffect(() => {
     if (nodeRef.current && node.userMessage) {
-      console.log(`System Node ${id} width: ${nodeRef.current.offsetWidth}px`);
+      console.debug(`System Node ${id} width: ${nodeRef.current.offsetWidth}px`);
     }
   }, [node.userMessage, id]);
 

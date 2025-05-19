@@ -181,51 +181,6 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     setEdges(reactFlowEdges);
   }, [session, nodeDimensions, streamingResponses]);
 
-  useEffect(() => {
-    // 不再根据任何状态自动触发calculateNodeLayout
-    // 仅在手动点击重排按钮时通过handleReorganizeLayout调用
-  }, []);
-
-  useEffect(() => {
-    if (!session?.nodes?.length) return;
-    
-    const resizeObserver = new ResizeObserver(entries => {
-      const newDimensions: Record<string, { width: number, height: number }> = {...nodeDimensions};
-      let didUpdate = false;
-      
-      entries.forEach(entry => {
-        const nodeElement = entry.target as HTMLElement;
-        const nodeId = nodeElement.getAttribute('data-id');
-        
-        if (nodeId) {
-          const { width, height } = entry.contentRect;
-          
-          if (
-            !newDimensions[nodeId] || 
-            Math.abs(newDimensions[nodeId].width - width) > 5 || 
-            Math.abs(newDimensions[nodeId].height - height) > 5
-          ) {
-            newDimensions[nodeId] = { width, height };
-            didUpdate = true;
-          }
-        }
-      });
-      
-      if (didUpdate) {
-        setNodeDimensions(newDimensions);
-      }
-    });
-    
-    setTimeout(() => {
-      document.querySelectorAll('.react-flow__node').forEach(node => {
-        resizeObserver.observe(node);
-      });
-    }, 300);
-    
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [session?.nodes]);
 
   const handleAddChildNode = async (parentId: string) => {
     if (!session || !defaultModelId) return;
@@ -495,7 +450,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
   useEffect(() => {
     if (!session?.nodes) return;
-    
+  
     // 获取当前显示的节点ID列表
     const currentNodeIds = new Set(nodes.map(n => n.id));
     
@@ -618,6 +573,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
     setNodes(reactFlowNodes);
     setEdges(reactFlowEdges);
+
   }, [session?.nodes]);
 
   if (!session) {
@@ -687,7 +643,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
 const ChatFlow: React.FC<ChatFlowProps> = ({ sessionId }) => (
   <ReactFlowProvider>
-    <ReactFlowWrapper sessionId={sessionId} />
+    <ReactFlowWrapper key={sessionId} sessionId={sessionId} />
   </ReactFlowProvider>
 );
 
