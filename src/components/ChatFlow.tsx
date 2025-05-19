@@ -44,9 +44,9 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [streamingResponses, setStreamingResponses] = useState<Record<string, string>>({});
 
-  const calculateNodeLayout = useCallback(() => {
+  const calculateNodeLayout = useCallback((forceRecalculate = false) => {
     if (!session || !session.nodes) return;
-
+  
     const defaultNodeWidth = 350;
     const defaultNodeHeight = 250;
     const horizontalSpacing = 200;
@@ -67,7 +67,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
     session.nodes.forEach(node => {
       nodeMap.set(node.id, node);
     });
-
+  
     const nodeLevels = new Map<string, number>();
     const determineLevel = (nodeId: string, level: number) => {
       nodeLevels.set(nodeId, level);
@@ -77,12 +77,12 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         determineLevel(child.id, level + 1);
       });
     };
-
+  
     const systemNode = session.nodes.find(n => n.type === 'system');
     if (systemNode) {
       determineLevel(systemNode.id, 0);
     }
-
+  
     const subtreeWidths = new Map<string, number>();
     const calculateSubtreeWidth = (nodeId: string): number => {
       const children = session.nodes.filter(n => n.parentId === nodeId);
@@ -102,11 +102,11 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
       subtreeWidths.set(nodeId, subtreeWidth);
       return subtreeWidth;
     };
-
+  
     if (systemNode) {
       calculateSubtreeWidth(systemNode.id);
     }
-
+  
     const levelHeights = new Map<number, number>();
     
     const calculateNodePosition = (nodeId: string, startX: number, level: number, startY: number) => {
@@ -129,23 +129,28 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         childStartX += childWidth + horizontalSpacing;
       });
     };
-
+  
     if (systemNode) {
       const rootWidth = subtreeWidths.get(systemNode.id) || getNodeDimensions(systemNode.id).width;
       calculateNodePosition(systemNode.id, -rootWidth / 2, 0, 0);
     }
-
+  
     const reactFlowNodes = session.nodes.map(node => {
-      // 首先查找保存的位置
+      // 强制重新布局 或 节点没有保存位置时，使用计算的位置
       let position: { x: number, y: number };
-      
-      if (node.position) {
-        // 如果节点有保存的位置，使用它
-        position = { x: node.position.x, y: node.position.y };
+      if (!forceRecalculate && node.position) {
+        position = node.position; // 保留原有位置
       } else {
-        // 否则使用通过算法计算的位置
         const calculatedPosition = nodePositions.get(node.id);
         position = calculatedPosition || { x: 0, y: 0 };
+        
+        // 如果是强制重新布局，保存新位置到 session
+        if (forceRecalculate) {
+          updateNodeInSession(sessionId, {
+            ...node,
+            position: { x: position.x, y: position.y }
+          });
+        }
       }
       
       return {
@@ -166,7 +171,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         }
       };
     });
-
+  
     const reactFlowEdges = session.nodes
       .filter(node => node.parentId)
       .map(node => ({
@@ -176,10 +181,16 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         type: 'smoothstep',
         animated: false,
       }));
-
+  
     setNodes(reactFlowNodes);
     setEdges(reactFlowEdges);
-  }, [session, nodeDimensions, streamingResponses]);
+  
+    // 调整视图以显示所有节点
+    setTimeout(() => {
+      reactFlowInstance.fitView({ padding: 0.2 });
+    }, 50);
+  
+  }, [session, nodeDimensions, streamingResponses, sessionId, updateNodeInSession]);  
 
 
   const handleAddChildNode = async (parentId: string) => {
@@ -403,9 +414,10 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   };
 
   const handleReorganizeLayout = useCallback(() => {
+    console.log("reorganize layout")
     calculateNodeLayout();
     setTimeout(() => {
-      //reactFlowInstance.fitView({ padding: 0.2 });
+      reactFlowInstance.fitView({ padding: 0.2 });
     }, 50);
   }, [calculateNodeLayout, reactFlowInstance]);
 
@@ -449,98 +461,13 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
   };
 
   useEffect(() => {
+    console.debug("session or nodes changed");
     if (!session?.nodes) return;
   
-    // 获取当前显示的节点ID列表
-    const currentNodeIds = new Set(nodes.map(n => n.id));
-    
-    // 检查是否有新增节点（会话节点ID中存在但当前节点ID中不存在）
-    const newNodes = session.nodes.filter(node => !currentNodeIds.has(node.id));
-    
-    // 如果有新增节点，为它们计算一个合适的位置，而不是重排整个布局
-    if (newNodes.length > 0) {
-      // 创建所有节点的副本，并为新节点计算位置
-      const updatedNodes = [...nodes];
-      
-      newNodes.forEach(newNode => {
-        // 找到父节点
-        const parentNode = newNode.parentId 
-          ? nodes.find(n => n.id === newNode.parentId) 
-          : null;
-        
-        if (!parentNode) {
-          // 如果没有父节点或找不到父节点，将新节点放在中心位置
-          updatedNodes.push({
-            id: newNode.id,
-            type: newNode.type,
-            position: { x: 0, y: 0 },
-            data: { 
-              node: newNode,
-              streamingResponse: streamingResponses[newNode.id] || null,
-              onAddChild: handleAddChildNode,
-              onEdit: handleEditNode,
-              onDelete: handleDeleteNode,
-              onRetry: handleRetryNode,
-              onModelChange: handleModelChange,
-              onTemperatureChange: handleTemperatureChange,
-              onMaxTokensChange: handleMaxTokensChange,
-              isRoot: newNode.type === 'system'
-            }
-          });
-        } else {
-          // 计算新节点位置：放在父节点正下方，稍微偏右一点
-          // 首先查找父节点下已有的子节点数量
-          const siblingCount = nodes.filter(n => 
-            n.data.node.parentId === newNode.parentId
-          ).length;
-          
-          const parentPos = parentNode.position;
-          const offsetX = siblingCount * 100; // 每个子节点向右偏移100px
-          
-          updatedNodes.push({
-            id: newNode.id,
-            type: newNode.type,
-            position: { 
-              x: parentPos.x + offsetX, 
-              y: parentPos.y + 250 // 默认垂直距离250px
-            },
-            data: { 
-              node: newNode,
-              streamingResponse: streamingResponses[newNode.id] || null,
-              onAddChild: handleAddChildNode,
-              onEdit: handleEditNode,
-              onDelete: handleDeleteNode,
-              onRetry: handleRetryNode,
-              onModelChange: handleModelChange,
-              onTemperatureChange: handleTemperatureChange,
-              onMaxTokensChange: handleMaxTokensChange,
-              isRoot: newNode.type === 'system'
-            }
-          });
-        }
-      });
-      
-      // 更新节点但保留边的计算逻辑
-      setNodes(updatedNodes);
-      
-      const reactFlowEdges = session.nodes
-        .filter(node => node.parentId)
-        .map(node => ({
-          id: `e-${node.parentId}-${node.id}`,
-          source: node.parentId!,
-          target: node.id,
-          type: 'smoothstep',
-          animated: false,
-        }));
-      
-      setEdges(reactFlowEdges);
-      return;
-    }
-    
-    // 正常情况下，只更新节点数据，保留位置
+    // 创建新的节点数组，确保使用节点保存的位置
     const reactFlowNodes = session.nodes.map(node => {
-      const existingNode = nodes.find(n => n.id === node.id);
-      const position = existingNode?.position || { x: 0, y: 0 };
+      // 优先使用节点保存的位置，如果没有则使用默认位置
+      const position = node.position || { x: 0, y: 0 };
       
       return {
         id: node.id,
@@ -560,7 +487,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         }
       };
     });
-
+  
     const reactFlowEdges = session.nodes
       .filter(node => node.parentId)
       .map(node => ({
@@ -570,11 +497,12 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         type: 'smoothstep',
         animated: false,
       }));
-
+  
     setNodes(reactFlowNodes);
     setEdges(reactFlowEdges);
 
-  }, [session?.nodes]);
+  }, [session?.nodes, sessionId, streamingResponses]); // 添加 sessionId 到依赖数组
+  
 
   if (!session) {
     return <div>Session not found</div>;
