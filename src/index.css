@@ -29,6 +29,7 @@ body {
 
 .system-node {
   @apply bg-indigo-50 border border-indigo-200;
+  min-width: 400px;
 }
 
 .user-message {
@@ -59,7 +60,7 @@ body {
 }
 
 .node-content {
-  min-width: 400px;
+  max-width: 360px;
   max-height: 1000px;
   scroll-behavior: smooth;
   width: 100%;
@@ -120,40 +121,22 @@ body {
   backdrop-filter: none !important;
 }
 
-/* 美化滚动条样式 */
+/* 自定义滚动条 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background-color: transparent;
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.5);
-  border-radius: 8px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.7);
-}
-
-/* Firefox 滚动条样式 */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-/* 对特定元素使用自定义滚动条 */
-.assistant-message::-webkit-scrollbar {
-  width: 4px;
-}
-
-.assistant-message::-webkit-scrollbar-thumb {
-  background: rgba(79, 70, 229, 0.4);
-}
-
-.assistant-message::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 70, 229, 0.6);
+  background-color: rgb(147, 147, 153, 0.5);
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
 }
