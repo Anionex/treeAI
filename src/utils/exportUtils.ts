@@ -37,18 +37,12 @@ export function exportToMindmap(session: Session): void {
 }
 
 function buildMindMapTree(session: Session): MindMapNode {
-  // Find the root node (system prompt)
-  const rootNode = session.nodes.find(n => n.type === 'system');
-  if (!rootNode) {
-    throw new Error('No system node found as root');
-  }
-  
-  // Build a map for faster lookup
+  // Create a map for faster lookup
   const nodeMap = new Map<string, ChatNode>();
   session.nodes.forEach(node => {
     nodeMap.set(node.id, node);
   });
-  
+
   // Create child node map
   const childrenMap = new Map<string, string[]>();
   session.nodes.forEach(node => {
@@ -59,56 +53,79 @@ function buildMindMapTree(session: Session): MindMapNode {
       childrenMap.get(node.parentId)?.push(node.id);
     }
   });
-  
+
+  // Create a root node for the title
+  const rootNode: MindMapNode = {
+    id: 'root',
+    text: session.title,
+    children: []
+  };
+
+  // Find the system node and add it as a child of the root node
+  const systemNode = session.nodes.find(n => n.type === 'system');
+  if (!systemNode) {
+    throw new Error('No system node found');
+  }
+
+  const systemMindMapNode: MindMapNode = {
+    id: systemNode.id,
+    text: 'System Prompt: ' + systemNode.userMessage,
+    children: []
+  };
+
+  rootNode.children?.push(systemMindMapNode);
+
   // Recursively build the tree
   const buildSubtree = (nodeId: string): MindMapNode => {
     const node = nodeMap.get(nodeId);
     if (!node) {
       throw new Error(`Node not found: ${nodeId}`);
     }
-    
-    const text = node.type === 'system' 
-      ? 'System Prompt: ' + truncateText(node.userMessage, 100)
-      : truncateText(node.userMessage, 100);
-    
+
+    const text = '🧑‍💻User: ' + node.userMessage + '\n---\n🤖Assistant: ' + node.assistantMessage;
+
     const mindMapNode: MindMapNode = {
       id: node.id,
       text
     };
-    
+
     const childIds = childrenMap.get(nodeId) || [];
     if (childIds.length > 0) {
       mindMapNode.children = childIds.map(id => buildSubtree(id));
     }
-    
+
     return mindMapNode;
   };
-  
-  return buildSubtree(rootNode.id);
+
+  // Add children to the system node
+  const childIds = childrenMap.get(systemNode.id) || [];
+  if (childIds.length > 0) {
+    systemMindMapNode.children = childIds.map(id => buildSubtree(id));
+  }
+
+  return rootNode;
 }
 
 function convertToFreeMindXML(root: MindMapNode, title: string): string {
   const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
   const mapStart = '<map version="1.0.1">';
   const mapEnd = '</map>';
-  
+
   const buildNodeXML = (node: MindMapNode, isRoot: boolean = false): string => {
-    const nodeStart = isRoot 
-      ? `<node ID="${node.id}" TEXT="${escapeXml(title)}" CREATED="${Date.now()}" MODIFIED="${Date.now()}">`
-      : `<node ID="${node.id}" TEXT="${escapeXml(node.text)}" CREATED="${Date.now()}" MODIFIED="${Date.now()}">`;
-    
+    const nodeStart = `<node ID="${node.id}" TEXT="${escapeXml(node.text)}" CREATED="${Date.now()}" MODIFIED="${Date.now()}">`;
+
     let content = nodeStart;
-    
+
     if (node.children && node.children.length > 0) {
       for (const child of node.children) {
         content += buildNodeXML(child);
       }
     }
-    
+
     content += '</node>';
     return content;
   };
-  
+
   const xml = `${xmlHeader}\n${mapStart}\n${buildNodeXML(root, true)}\n${mapEnd}`;
   return xml;
 }
