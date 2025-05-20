@@ -76,7 +76,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
       ref={nodeRef}
       className={`node-content system-node shadow-md rounded-lg overflow-hidden ${nodeHeight}`}
     >
-      <div className="bg-indigo-600 text-white p-2 flex justify-between items-center">
+      <div className="bg-blue-600 text-white p-2 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Settings size={16} />
           <span className="font-medium">System Prompt</span>
@@ -84,7 +84,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
         
         <div className="flex space-x-1 node-toolbar">
           <button 
-            className="p-1 rounded hover:bg-indigo-500 transition-colors"
+            className="p-1 rounded hover:bg-blue-500 transition-colors"
             onClick={() => setShowSettings(!showSettings)}
             title="Model Settings"
           >
@@ -94,7 +94,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
       </div>
 
       {showSettings && (
-        <div className="p-3 bg-indigo-50 border-b border-indigo-200">
+        <div className="p-3 bg-blue-50 border-b border-blue-200">
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Model
@@ -102,7 +102,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
             <select
               value={node.modelId || ''}
               onChange={(e) => onModelChange(node.id, e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {models.map(model => (
                 <option key={model.id} value={model.id}>{model.name}</option>
@@ -150,7 +150,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
             onChange={(e) => setSystemPrompt(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            className="w-full h-32 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full h-32 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter system prompt..."
           />
         ) : (
@@ -168,20 +168,19 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
         )}
       </div>
 
-      <div className="bg-indigo-50 p-2 flex justify-end space-x-2 border-t border-indigo-100">
+      <div className="bg-blue-50 p-2 flex justify-end space-x-2 border-t border-blue-100">
         <button 
-          className="flex items-center space-x-1 px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+          className="flex items-center space-x-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           onClick={() => onAddChild(node.id)}
         >
           <Plus size={14} />
-          <span className="text-sm">Add Node</span>
         </button>
       </div>
 
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: '#4f46e5' }}
+        style={{ background: '#2563eb' }}
       />
     </div>
   );

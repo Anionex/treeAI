@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #4f46e5;
-  --color-primary-light: #6366f1;
-  --color-secondary: #14b8a6;
-  --color-accent: #f59e0b;
+  --color-primary: #2563eb;
+  --color-primary-light: #3b82f6;
+  --color-secondary: #10b981;
+  --color-accent: #f97316;
   --color-success: #22c55e;
-  --color-warning: #f97316;
+  --color-warning: #eab308;
   --color-error: #ef4444;
   --color-background: #f9fafb;
   --color-surface: #ffffff;
@@ -28,7 +28,7 @@ body {
 }
 
 .system-node {
-  @apply bg-indigo-50 border border-indigo-200;
+  @apply bg-white;
   min-width: 400px;
 }
 
@@ -48,7 +48,7 @@ body {
 }
 
 .react-flow__handle {
-  @apply bg-indigo-500;
+  @apply bg-blue-500;
 }
 
 .node-toolbar {
@@ -74,7 +74,7 @@ body {
 }
 
 .sidebar-session.active {
-  @apply bg-indigo-100 text-indigo-700;
+  @apply bg-blue-100 text-blue-700;
 }
 
 .md-editor-preview-wrapper {
@@ -82,7 +82,7 @@ body {
 }
 
 .md-preview {
-  @apply prose prose-indigo max-w-none;
+  @apply prose prose-blue max-w-none;
   max-width: 100% !important;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -112,7 +112,7 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-600;
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500;
 }
 
 .sidebar {

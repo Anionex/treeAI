@@ -116,15 +116,15 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
   return (
     <div 
       ref={nodeRef}
-      className="node-content bg-white rounded-lg shadow-md overflow-hidden"
+      className="node-content bg-white rounded-2xl shadow-md overflow-hidden"
     >
       <Handle
         type="target"
         position={Position.Top}
-        style={{ background: '#4f46e5' }}
+        style={{ background: '#2563eb' }}
       />
 
-      <div className="bg-indigo-600 text-white p-2 flex justify-between items-center">
+      <div className="bg-[#3b82f6] text-white p-2 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <MessageSquare size={16} />
           <span className="font-medium">Chat Node</span>
@@ -132,14 +132,14 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         
         <div className="flex space-x-1 node-toolbar">
           <button 
-            className="p-1 rounded hover:bg-indigo-500 transition-colors"
+            className="p-1 rounded hover:bg-blue-500 transition-colors"
             onClick={() => setShowSettings(!showSettings)}
             title="Model Settings"
           >
             <Settings size={16} />
           </button>
           <button 
-            className="p-1 rounded hover:bg-indigo-500 transition-colors"
+            className="p-1 rounded hover:bg-blue-500 transition-colors"
             onClick={() => onDelete(node.id)}
             title="Delete Node"
           >
@@ -149,7 +149,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
       </div>
 
       {showSettings && (
-        <div className="p-3 bg-indigo-50 border-b border-indigo-200">
+        <div className="p-3 bg-blue-50 border-b border-blue-200">
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Model
@@ -157,7 +157,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             <select
               value={node.modelId || ''}
               onChange={(e) => onModelChange(node.id, e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {models.map(model => (
                 <option key={model.id} value={model.id}>{model.name}</option>
@@ -215,17 +215,24 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
               onBlur={() => {
                 onEdit(node.id, userMessage, 'user', false);
               }}
-              className="w-full p-2 border border-none rounded-md pr-10 focus:outline-none min-h-[100px]"
-              placeholder="Type your message..."
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter message..."
               onKeyDown={handleKeyDown}
+              rows={3}
             />
-            <button
-              className="absolute bottom-2 right-2 p-1 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition-colors"
-              onClick={handleSubmitUserMessage}
-              disabled={!userMessage.trim()}
-            >
-              <Send size={16} />
-            </button>
+            <div className="flex justify-end mt-2 pr-2" style={{ marginTop: "-30px" }}>
+              <button
+                onClick={handleSubmitUserMessage}
+                disabled={!userMessage.trim()}
+                className={`flex items-center space-x-1 px-1 py-1 rounded-2xl ${
+                  userMessage.trim() 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                } transition-colors`}
+              >
+                <Send size={16} />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="relative group">
@@ -237,7 +244,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             </div>
             <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                className="p-1 text-gray-500 hover:text-indigo-600 transition-colors"
+                className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
                 onClick={() => handleCopyToClipboard(node.userMessage)}
                 title="Copy"
               >
@@ -302,7 +309,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             </div>
             <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
-                className="p-1 text-gray-500 hover:text-indigo-600 transition-colors"
+                className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
                 onClick={() => handleCopyToClipboard(node.assistantMessage)}
                 title="Copy"
               >
@@ -317,29 +324,36 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         ) : null}
       </div>
 
-      <div className="bg-gray-50 p-2 flex justify-between border-t border-gray-100">
-        <button 
-          className="flex items-center space-x-1 px-2 py-1 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-          onClick={() => onRetry(node.id)}
-          disabled={!node.userMessage || node.isStreaming}
-        >
-          <RefreshCcw size={14} />
-          <span className="text-sm">Retry</span>
-        </button>
+      <div className="flex justify-between items-center border-t border-gray-200 pt-2 px-2 pb-2">
+        <div className="flex space-x-2">
+          <button 
+            onClick={() => handleCopyToClipboard(node.assistantMessage)}
+            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+            title="Copy to clipboard"
+          >
+            <Copy size={18} />
+          </button>
+          <button 
+            onClick={() => onRetry(node.id)} 
+            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+            title="Regenerate response"
+          >
+            <RefreshCcw size={18} />
+          </button>
+        </div>
         
         <button 
-          className="flex items-center space-x-1 px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+          className="flex items-center space-x-1 px-1.5 py-1.5 bg-[#3b82f6] text-white rounded-full hover:bg-blue-700 transition-colors"
           onClick={() => onAddChild(node.id)}
         >
           <Plus size={14} />
-          <span className="text-sm">Add Child</span>
         </button>
       </div>
 
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: '#4f46e5' }}
+        style={{ background: '#2563eb' }}
       />
     </div>
   );
