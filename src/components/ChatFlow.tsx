@@ -513,7 +513,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
       <div className="absolute top-4 right-4 z-10 flex space-x-2">
         <FileUploadButton onUploadComplete={handleUploadComplete} />
         <button 
-          className="flex items-center space-x-2 bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+          className="flex items-center space-x-2 gradient-accent-button text-white px-3 py-2 rounded-md transition-colors"
           onClick={handleExport}
         >
           <Share2 size={16} />
@@ -558,7 +558,7 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
       
       <div className="absolute bottom-4 right-4 z-10">
         <button 
-          className="flex items-center justify-center bg-indigo-600 text-white p-3 rounded-full hover:bg-indigo-700 transition-colors shadow-md"
+          className="flex items-center justify-center gradient-accent-button text-white p-3 rounded-full transition-colors shadow-md"
           onClick={handleReorganizeLayout}
           title="重新排布节点"
         >

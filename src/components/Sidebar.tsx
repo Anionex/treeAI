@@ -170,12 +170,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
       </div>
 
       <div className="p-3 border-t border-gray-200 flex justify-between">
-        <button 
+        <button
           className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           onClick={handleCreateSession}
+          className="w-full flex items-center justify-center space-x-2 py-2 px-4 gradient-primary-button text-white rounded-md transition-colors"
         >
-          <Plus size={18} />
-          <span>New Conversation</span>
+          <Plus size={16} />
+          <span>新建会话</span>
         </button>
       </div>
       

@@ -74,9 +74,9 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
   return (
     <div 
       ref={nodeRef}
-      className={`node-content system-node shadow-md rounded-lg overflow-hidden ${nodeHeight}`}
+      className={`node-content system-node rounded-lg overflow-hidden ${nodeHeight}`}
     >
-      <div className="bg-blue-600 text-white p-2 flex justify-between items-center">
+      <div className="system-node-header text-white p-2 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Settings size={16} />
           <span className="font-medium">System Prompt</span>
@@ -84,7 +84,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
         
         <div className="flex space-x-1 node-toolbar">
           <button 
-            className="p-1 rounded hover:bg-blue-500 transition-colors"
+            className="p-1 rounded hover:bg-blue-500/30 transition-colors"
             onClick={() => setShowSettings(!showSettings)}
             title="Model Settings"
           >
@@ -94,7 +94,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
       </div>
 
       {showSettings && (
-        <div className="p-3 bg-blue-50 border-b border-blue-200">
+        <div className="p-3 settings-panel">
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Model
@@ -142,7 +142,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
         </div>
       )}
 
-      <div className="p-3">
+      <div className="p-3 bg-gradient-to-b from-white to-gray-50">
         {isEditing ? (
           <textarea
             ref={textareaRef}
@@ -168,9 +168,9 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
         )}
       </div>
 
-      <div className="bg-blue-50 p-2 flex justify-end space-x-2 border-t border-blue-100">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-2 flex justify-end space-x-2 border-t border-blue-100">
         <button 
-          className="flex items-center space-x-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          className="gradient-button flex items-center space-x-1 px-2 py-1 text-white rounded hover:shadow-md transition-all"
           onClick={() => onAddChild(node.id)}
         >
           <Plus size={14} />
@@ -180,7 +180,6 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: '#2563eb' }}
       />
     </div>
   );

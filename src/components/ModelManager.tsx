@@ -247,7 +247,7 @@ const ModelManager: React.FC<ModelManagerProps> = ({ onClose }) => {
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 gradient-primary-button text-white rounded-md transition-colors"
                   >
                     <Save size={16} />
                     <span>Save Model</span>
@@ -262,7 +262,7 @@ const ModelManager: React.FC<ModelManagerProps> = ({ onClose }) => {
                     Select a model from the list to edit or create a new one.
                   </p>
                   <button 
-                    className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                    className="inline-flex items-center space-x-2 px-4 py-2 gradient-primary-button text-white rounded-md transition-colors"
                     onClick={handleAddModel}
                   >
                     <Plus size={16} />

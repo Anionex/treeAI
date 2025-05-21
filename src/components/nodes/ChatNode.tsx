@@ -116,15 +116,14 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
   return (
     <div 
       ref={nodeRef}
-      className="node-content bg-white rounded-2xl shadow-md overflow-hidden"
+      className="node-content bg-white rounded-2xl overflow-hidden"
     >
       <Handle
         type="target"
         position={Position.Top}
-        style={{ background: '#2563eb' }}
       />
 
-      <div className="bg-[#3b82f6] text-white p-2 flex justify-between items-center">
+      <div className="chat-node-header text-white p-2 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <MessageSquare size={16} />
           <span className="font-medium">Chat Node</span>
@@ -132,14 +131,14 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         
         <div className="flex space-x-1 node-toolbar">
           <button 
-            className="p-1 rounded hover:bg-blue-500 transition-colors"
+            className="p-1 rounded hover:bg-blue-500/30 transition-colors"
             onClick={() => setShowSettings(!showSettings)}
             title="Model Settings"
           >
             <Settings size={16} />
           </button>
           <button 
-            className="p-1 rounded hover:bg-blue-500 transition-colors"
+            className="p-1 rounded hover:bg-blue-500/30 transition-colors"
             onClick={() => onDelete(node.id)}
             title="Delete Node"
           >
@@ -149,7 +148,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
       </div>
 
       {showSettings && (
-        <div className="p-3 bg-blue-50 border-b border-blue-200">
+        <div className="p-3 settings-panel">
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Model
@@ -224,10 +223,10 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
               <button
                 onClick={handleSubmitUserMessage}
                 disabled={!userMessage.trim()}
-                className={`flex items-center space-x-1 px-1 py-1 rounded-2xl ${
+                className={`flex items-center space-x-1 px-2 py-1 rounded-full ${
                   userMessage.trim() 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'send-button'
+                    : 'send-button disabled'
                 } transition-colors`}
               >
                 <Send size={16} />
@@ -324,7 +323,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         ) : null}
       </div>
 
-      <div className="flex justify-between items-center border-t border-gray-200 pt-2 px-2 pb-2">
+      <div className="flex justify-between items-center border-t border-gray-200 pt-2 px-2 pb-2 bg-gradient-to-b from-gray-50 to-white">
         <div className="flex space-x-2">
           <button 
             onClick={() => handleCopyToClipboard(node.assistantMessage)}
@@ -343,7 +342,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         </div>
         
         <button 
-          className="flex items-center space-x-1 px-1.5 py-1.5 bg-[#3b82f6] text-white rounded-full hover:bg-blue-700 transition-colors"
+          className="gradient-button flex items-center space-x-1 px-1.5 py-1.5 text-white rounded-full"
           onClick={() => onAddChild(node.id)}
         >
           <Plus size={14} />
@@ -353,7 +352,6 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: '#2563eb' }}
       />
     </div>
   );

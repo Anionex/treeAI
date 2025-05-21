@@ -55,7 +55,7 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({ onUploadComplete })
   return (
     <>
       <button
-        className="flex items-center space-x-2 bg-white text-indigo-600 border border-indigo-200 px-3 py-2 rounded-md hover:bg-indigo-50 transition-colors"
+        className="flex items-center space-x-2 gradient-outline-button text-indigo-600 px-3 py-2 rounded-md transition-colors"
         onClick={() => setShowDropzone(true)}
       >
         <FileUp size={16} />
@@ -150,7 +150,7 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({ onUploadComplete })
             
             <div className="bg-gray-50 px-4 py-3 flex justify-end rounded-b-lg">
               <button
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                className="px-4 py-2 gradient-primary-button text-white rounded-md transition-colors"
                 onClick={() => setShowDropzone(false)}
               >
                 Close
