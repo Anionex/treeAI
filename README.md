@@ -13,7 +13,8 @@ npm install
 npm run dev
 ```
 
-![image](https://github.com/user-attachments/assets/8510a872-a835-4e70-92d6-f96d551ec35d)
+![image](https://github.com/user-attachments/assets/b9c4d615-6a36-443e-8fbc-35312a70df87)
+
 
 
 ## 技术栈
