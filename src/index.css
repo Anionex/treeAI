@@ -34,6 +34,7 @@ body {
 
 .user-message {
   @apply bg-white border border-gray-200;
+  font-size: 20px;
 }
 
 .assistant-message {
@@ -60,8 +61,8 @@ body {
 }
 
 .node-content {
-  max-width: 360px;
-  max-height: 1000px;
+  max-width: 530px;
+  max-height: 600px;
   scroll-behavior: smooth;
   width: 100%;
   overflow-wrap: break-word;

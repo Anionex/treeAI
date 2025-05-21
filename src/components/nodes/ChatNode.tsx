@@ -198,7 +198,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
       )}
 
       <div 
-        className="user-message border-b border-gray-100"
+        className="user-message border-b border-gray-100 p-2"
         onWheel={(e) => {
           e.stopPropagation();
         }}
