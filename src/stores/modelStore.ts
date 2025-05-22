@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Model } from '../types';
 import db from '../db/db';
+import { showError, showInfo, showSuccess } from '../utils/notification';
 
 interface ModelState {
   models: Model[];
@@ -40,7 +41,9 @@ export const useModelStore = create<ModelState>((set, get) => ({
           defaultModelId: newDefaultId
         };
       });
-    } catch (error) {
+      showSuccess('模型创建成功');
+    } catch (error: any) {
+      showError('模型创建失败:' + error.message);
       console.error('Failed to create model:', error);
     }
   },
@@ -53,7 +56,9 @@ export const useModelStore = create<ModelState>((set, get) => ({
           m.id === model.id ? model : m
         )
       }));
-    } catch (error) {
+      showSuccess('模型更新成功');
+    } catch (error: any) {
+      showError('模型更新失败：' + error.message);
       console.error('Failed to update model:', error);
     }
   },
@@ -72,7 +77,9 @@ export const useModelStore = create<ModelState>((set, get) => ({
           defaultModelId: newDefaultId
         };
       });
-    } catch (error) {
+      showInfo('模型已删除');
+    } catch (error: any) {
+      showError('模型删除失败:' + error.message);
       console.error('Failed to delete model:', error);
     }
   }

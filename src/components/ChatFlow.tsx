@@ -20,6 +20,7 @@ import { Share2, DownloadCloud, LayoutGrid } from 'lucide-react';
 import { exportToMindmap } from '../utils/exportUtils';
 import { gsap } from 'gsap';
 import FileUploadButton from './FileUploadButton';
+import { showSuccess, showInfo, showWarning, showError } from '../utils/notification';
 
 const nodeTypes = {
   system: SystemNode,
@@ -410,7 +411,12 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
   const handleExport = () => {
     if (!session) return;
-    exportToMindmap(session);
+    try {
+      exportToMindmap(session);
+      showSuccess('导出成功');
+    } catch (error: any) {
+      showError('导出失败:' + error.message);
+    }
   };
 
   const handleReorganizeLayout = useCallback(() => {

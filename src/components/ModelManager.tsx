@@ -3,7 +3,7 @@ import { X, Plus, Save, Trash2 } from 'lucide-react';
 import { useModelStore } from '../stores/modelStore';
 import { Model } from '../types';
 import { gsap } from 'gsap';
-
+import { showSuccess, showInfo, showWarning, showError } from '../utils/notification';
 interface ModelManagerProps {
   onClose: () => void;
 }

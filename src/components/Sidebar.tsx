@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSessionStore } from '../stores/sessionStore';
 import { Search, Plus, Settings, Trash2, Edit, X, ChevronLeft } from 'lucide-react';
 import { gsap } from 'gsap';
+import { showSuccess, showWarning, showError, showInfo } from '../utils/notification';
 
 interface SidebarProps {
   onModelManagerClick: () => void;
@@ -62,6 +63,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
         ...session,
         title: editTitle.trim()
       });
+      showSuccess('会话名称已更新');
+    } else if (!editTitle.trim()) {
+      showWarning('会话名称不能为空');
     }
     setEditingId(null);
   };
@@ -72,6 +76,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
     } else if (e.key === 'Escape') {
       setEditingId(null);
     }
+  };
+
+  const handleDeleteSession = (id: string) => {
+    deleteSession(id);
+    showInfo('会话已删除');
   };
 
   if (collapsed) return null;
@@ -158,7 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
                   className="text-gray-500 hover:text-red-600 p-1 rounded-md hover:bg-gray-100"
                   onClick={(e) => {
                     e.stopPropagation();
-                    deleteSession(session.id);
+                    handleDeleteSession(session.id);
                   }}
                 >
                   <Trash2 size={16} />
@@ -173,7 +182,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
         <button
           className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           onClick={handleCreateSession}
-          className="w-full flex items-center justify-center space-x-2 py-2 px-4 gradient-primary-button text-white rounded-md transition-colors"
         >
           <Plus size={16} />
           <span>新建会话</span>

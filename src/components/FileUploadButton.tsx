@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { FileUp, X } from 'lucide-react';
 import { extractTextFromFiles } from '../utils/fileUtils';
 import { FileExtractResult } from '../types';
-
+import { showSuccess, showInfo, showWarning, showError } from '../utils/notification';
 interface FileUploadButtonProps {
   onUploadComplete: (text: string) => void;
 }
@@ -45,8 +45,10 @@ const FileUploadButton: React.FC<FileUploadButtonProps> = ({ onUploadComplete })
           setExtractedFiles([]);
           setIsUploading(false);
         }, 1500);
+        showSuccess('文件已上传');
       } catch (err: any) {
         setError(err.message || 'Failed to extract text from files');
+        showError('文件上传失败：' + err.message);
         setIsUploading(false);
       }
     },

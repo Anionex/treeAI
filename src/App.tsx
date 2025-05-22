@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatFlow from './components/ChatFlow';
 import ModelManager from './components/ModelManager';
+import NotificationContainer from './components/Notification';
 import { useSessionStore } from './stores/sessionStore';
 import { useModelStore } from './stores/modelStore';
 import { useDatabaseContext } from './context/DatabaseContext';
@@ -102,6 +103,8 @@ const App: React.FC = () => {
       {showModelManager && (
         <ModelManager onClose={() => setShowModelManager(false)} />
       )}
+      
+      <NotificationContainer />
     </div>
   );
 };
