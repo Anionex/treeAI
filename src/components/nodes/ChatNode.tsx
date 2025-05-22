@@ -5,6 +5,7 @@ import 'md-editor-rt/lib/preview.css';
 import { Plus, Send, RefreshCcw, Copy, Settings, Trash2, MessageSquare } from 'lucide-react';
 import { useModelStore } from '../../stores/modelStore';
 import { gsap } from 'gsap';
+import { showSuccess, showInfo, showWarning } from '../../utils/notification';
 
 interface ChatNodeProps {
   id: string;
@@ -40,12 +41,6 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
     }
   }, [node.assistantMessage, id]);
 
-  useEffect(() => {
-    // Only update userMessage from node if not editing or current input is empty
-    if (!isEditingUser || !userMessage) {
-      setUserMessage(node.userMessage || '');
-    }
-  }, [node.userMessage, isEditingUser, userMessage]);
 
   useEffect(() => {
     if (isEditingUser && userInputRef.current) {
@@ -89,6 +84,9 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
         { backgroundColor: 'transparent', duration: 1 }
       );
     }
+    
+    // 显示通知
+    showSuccess('内容已复制到剪贴板');
   };
 
   // 阻止滚轮事件冒泡，仅在消息区域内滚动
@@ -139,7 +137,10 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
           </button>
           <button 
             className="p-1 rounded hover:bg-blue-500/30 transition-colors"
-            onClick={() => onDelete(node.id)}
+            onClick={() => {
+              onDelete(node.id);
+              showWarning('节点已删除');
+            }}
             title="Delete Node"
           >
             <Trash2 size={16} />
@@ -155,7 +156,13 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             </label>
             <select
               value={node.modelId || ''}
-              onChange={(e) => onModelChange(node.id, e.target.value)}
+              onChange={(e) => {
+                onModelChange(node.id, e.target.value);
+                const selectedModel = models.find(m => m.id === e.target.value);
+                if (selectedModel) {
+                  showInfo(`已切换到模型: ${selectedModel.name}`);
+                }
+              }}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {models.map(model => (
@@ -189,7 +196,13 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
               max="4096"
               step="256"
               value={node.maxTokens}
-              onChange={(e) => onMaxTokensChange(node.id, parseInt(e.target.value))}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                onMaxTokensChange(node.id, value);
+                if (value % 1024 === 0) { // 只在1024的整数倍时显示通知
+                  showInfo(`最大令牌数设置为: ${value}`);
+                }
+              }}
               className="w-full"
             />
           </div>
@@ -213,6 +226,9 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
               }}
               onBlur={() => {
                 onEdit(node.id, userMessage, 'user', false);
+                if (userMessage.trim() && userMessage !== node.userMessage) {
+                  showInfo('消息已保存');
+                }
               }}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter message..."
@@ -333,7 +349,10 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             <Copy size={18} />
           </button>
           <button 
-            onClick={() => onRetry(node.id)} 
+            onClick={() => {
+              onRetry(node.id);
+              showInfo('正在重新生成回复...');
+            }} 
             className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
             title="Regenerate response"
           >
