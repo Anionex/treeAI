@@ -12,8 +12,9 @@ TreeChat是一个基于树状结构的对话应用，支持文件上传、多模
 npm install
 npm run dev
 ```
+minimal theme(new):
+<img width="2776" height="1394" alt="image" src="https://github.com/user-attachments/assets/3a0758d4-95ff-42e7-83ae-b98b45669878" />
 
-![image](https://github.com/user-attachments/assets/b9c4d615-6a36-443e-8fbc-35312a70df87)
 
 
 
