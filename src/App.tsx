@@ -7,7 +7,7 @@ import { useSessionStore } from './stores/sessionStore';
 import { useModelStore } from './stores/modelStore';
 import { useDatabaseContext } from './context/DatabaseContext';
 import { Session } from './types';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Loader2, PlusCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [showModelManager, setShowModelManager] = useState(false);
@@ -40,23 +40,23 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen w-screen items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-          <p className="mt-4 text-lg text-gray-700">Loading TreeChat AI...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-neutral-500 mx-auto" />
+          <p className="mt-4 text-base text-neutral-600">加载中...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-neutral-50">
       {sidebarCollapsed && (
         <button 
-          className="absolute top-4 left-4 z-20 bg-white p-2 rounded-full shadow-md border border-gray-200"
+          className="absolute top-4 left-4 z-20 bg-white p-1.5 rounded-full shadow-minimal border border-neutral-200"
           onClick={toggleSidebar}
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={14} className="text-neutral-600" />
         </button>
       )}
       
@@ -70,20 +70,20 @@ const App: React.FC = () => {
           <ChatFlow sessionId={currentSessionId} />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <div className="text-center max-w-md p-8 bg-white rounded-lg shadow-md">
-              <h2 className="text-2xl font-bold gradient-text mb-4">Welcome to TreeChat AI</h2>
-              <p className="text-gray-600 mb-6">
-                Create a new session to start a tree-structured conversation with AI.
+            <div className="text-center max-w-md p-8 bg-white rounded-lg shadow-subtle border border-neutral-100">
+              <h2 className="text-xl font-medium text-neutral-800 mb-4">欢迎使用 TreeChat</h2>
+              <p className="text-neutral-600 mb-6 text-sm leading-relaxed">
+                创建一个新会话，开始与 AI 进行树状结构的对话。
               </p>
               <button 
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                className="flex items-center justify-center space-x-2 px-5 py-2 bg-neutral-900 text-white rounded-md hover:bg-neutral-800 transition-colors"
                 onClick={() => {
                   if (models.length === 0) {
                     setShowModelManager(true);
                   } else {
                     const newSession: Session = {
                       id: crypto.randomUUID(),
-                      title: "New Conversation",
+                      title: "新会话",
                       createdAt: new Date().toISOString(),
                       updatedAt: new Date().toISOString(),
                       nodes: []
@@ -93,7 +93,8 @@ const App: React.FC = () => {
                   }
                 }}
               >
-                {models.length === 0 ? "Set Up Models First" : "Create New Session"}
+                <PlusCircle size={16} className="mr-2" />
+                <span>{models.length === 0 ? "设置模型" : "创建新会话"}</span>
               </button>
             </div>
           </div>

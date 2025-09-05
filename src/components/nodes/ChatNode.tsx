@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position } from 'reactflow';
 import { MdPreview } from 'md-editor-rt';
 import 'md-editor-rt/lib/preview.css';
-import { Plus, Send, RefreshCcw, Copy, Settings, Trash2, MessageSquare } from 'lucide-react';
+import { Plus, Send, RefreshCcw, Copy, Settings, Trash2, MessageSquare, MoreHorizontal } from 'lucide-react';
 import { useModelStore } from '../../stores/modelStore';
 import { gsap } from 'gsap';
 import { showSuccess, showInfo, showWarning } from '../../utils/notification';
@@ -114,45 +114,46 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
   return (
     <div 
       ref={nodeRef}
-      className="node-content bg-white rounded-2xl overflow-hidden"
+      className="node-content bg-white rounded-lg overflow-hidden border border-neutral-200 shadow-minimal"
     >
       <Handle
         type="target"
         position={Position.Top}
+        className="!bg-neutral-400 !border-white"
       />
 
-      <div className="chat-node-header text-white p-2 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <MessageSquare size={16} />
-          <span className="font-medium">Chat Node</span>
+      <div className="flex justify-between items-center p-2 text-neutral-700 border-b border-neutral-100">
+        <div className="flex items-center">
+          <MessageSquare size={14} className="mr-1.5 text-neutral-500" />
+          <span className="text-xs font-medium">对话节点</span>
         </div>
         
         <div className="flex space-x-1 node-toolbar">
           <button 
-            className="p-1 rounded hover:bg-blue-500/30 transition-colors"
+            className="p-1 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 rounded transition-colors"
             onClick={() => setShowSettings(!showSettings)}
-            title="Model Settings"
+            title="模型设置"
           >
-            <Settings size={16} />
+            <Settings size={12} />
           </button>
           <button 
-            className="p-1 rounded hover:bg-blue-500/30 transition-colors"
+            className="p-1 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 rounded transition-colors"
             onClick={() => {
               onDelete(node.id);
               showWarning('节点已删除');
             }}
-            title="Delete Node"
+            title="删除节点"
           >
-            <Trash2 size={16} />
+            <Trash2 size={12} />
           </button>
         </div>
       </div>
 
       {showSettings && (
-        <div className="p-3 settings-panel">
+        <div className="p-3 bg-neutral-50 border-b border-neutral-100">
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Model
+            <label className="block text-xs font-medium text-neutral-700 mb-1">
+              模型
             </label>
             <select
               value={node.modelId || ''}
@@ -163,7 +164,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
                   showInfo(`已切换到模型: ${selectedModel.name}`);
                 }
               }}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-1.5 text-xs border border-neutral-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
             >
               {models.map(model => (
                 <option key={model.id} value={model.id}>{model.name}</option>
@@ -172,9 +173,12 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
           </div>
           
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Temperature: {node.temperature.toFixed(1)}
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-xs font-medium text-neutral-700">
+                温度
+              </label>
+              <span className="text-xs text-neutral-500">{node.temperature.toFixed(1)}</span>
+            </div>
             <input
               type="range"
               min="0"
@@ -182,14 +186,17 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
               step="0.1"
               value={node.temperature}
               onChange={(e) => onTemperatureChange(node.id, parseFloat(e.target.value))}
-              className="w-full"
+              className="w-full accent-neutral-700"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Max Tokens: {node.maxTokens}
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-xs font-medium text-neutral-700">
+                最大令牌数
+              </label>
+              <span className="text-xs text-neutral-500">{node.maxTokens}</span>
+            </div>
             <input
               type="range"
               min="256"
@@ -203,14 +210,14 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
                   showInfo(`最大令牌数设置为: ${value}`);
                 }
               }}
-              className="w-full"
+              className="w-full accent-neutral-700"
             />
           </div>
         </div>
       )}
 
       <div 
-        className="user-message border-b border-gray-100 p-2"
+        className="p-3 border-b border-neutral-100"
         onWheel={(e) => {
           e.stopPropagation();
         }}
@@ -230,8 +237,8 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
                   showInfo('消息已保存');
                 }
               }}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter message..."
+              className="w-full p-2.5 border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-400 text-sm"
+              placeholder="在此输入您的消息..."
               onKeyDown={handleKeyDown}
               rows={3}
             />
@@ -333,36 +340,37 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
             </div>
           </div>
         ) : !node.isStreaming ? (
-          <div className="text-gray-400 italic min-h-[160px]">
-            {node.error ? 'Retry to get AI response' : 'AI response will appear here'}
+          <div className="text-neutral-400 italic min-h-[160px] text-sm">
+            {node.error ? '请点击重试获取AI回复' : 'AI回复将显示在这里'}
           </div>
         ) : null}
       </div>
 
-      <div className="flex justify-between items-center border-t border-gray-200 pt-2 px-2 pb-2 bg-gradient-to-b from-gray-50 to-white">
+      <div className="flex justify-between items-center border-t border-neutral-100 p-2">
         <div className="flex space-x-2">
           <button 
             onClick={() => handleCopyToClipboard(node.assistantMessage)}
-            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-            title="Copy to clipboard"
+            className="p-1 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 rounded transition-colors"
+            title="复制到剪贴板"
           >
-            <Copy size={18} />
+            <Copy size={14} />
           </button>
           <button 
             onClick={() => {
               onRetry(node.id);
               showInfo('正在重新生成回复...');
             }} 
-            className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-            title="Regenerate response"
+            className="p-1 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 rounded transition-colors"
+            title="重新生成回复"
           >
-            <RefreshCcw size={18} />
+            <RefreshCcw size={14} />
           </button>
         </div>
         
         <button 
-          className="gradient-button flex items-center space-x-1 px-1.5 py-1.5 text-white rounded-full"
+          className="flex items-center justify-center p-1.5 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-colors"
           onClick={() => onAddChild(node.id)}
+          title="添加子节点"
         >
           <Plus size={14} />
         </button>
@@ -371,6 +379,7 @@ const ChatNode: React.FC<ChatNodeProps> = ({ id, data }) => {
       <Handle
         type="source"
         position={Position.Bottom}
+        className="!bg-neutral-400 !border-white"
       />
     </div>
   );

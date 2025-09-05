@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSessionStore } from '../stores/sessionStore';
-import { Search, Plus, Settings, Trash2, Edit, X, ChevronLeft } from 'lucide-react';
+import { 
+  Search, Plus, Settings, Trash2, Edit, X, ChevronLeft,
+  MessageSquare, Library, Home, MoreHorizontal
+} from 'lucide-react';
 import { gsap } from 'gsap';
 import { showSuccess, showWarning, showError, showInfo } from '../utils/notification';
 
@@ -88,56 +91,60 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
   return (
     <div 
       ref={sidebarRef}
-      className="sidebar w-64 h-full bg-white border-r border-gray-200 flex flex-col z-10 pl-4 relative"
+      className="sidebar w-64 h-full bg-white border-r border-neutral-200 flex flex-col z-10 relative"
     >
       <button 
-        className="absolute -right-3 top-4 bg-white p-1 rounded-full border border-gray-200 shadow-md z-20"
+        className="absolute -right-3 top-4 bg-white p-1.5 rounded-full border border-neutral-200 shadow-minimal z-20"
         onClick={onToggleCollapse}
       >
-        <ChevronLeft size={16} />
+        <ChevronLeft size={14} className="text-neutral-600" />
       </button>
 
-      <div className="p-4 border-b border-gray-200">
-        <h1 className="text-xl font-bold gradient-text">TreeChat AI</h1>
+      <div className="px-5 py-4 border-b border-neutral-100">
+        <h1 className="text-lg font-medium gradient-text">TreeChat</h1>
       </div>
 
-      <div className="p-3 border-b border-gray-200">
+      <div className="px-4 py-3">
         <div className="relative">
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search conversations..."
-            className="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            placeholder="搜索会话..."
+            className="w-full pl-9 pr-3 py-2 rounded-md border border-neutral-200 bg-neutral-50 focus:outline-none focus:ring-1 focus:ring-neutral-300 focus:border-neutral-300 text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+          <Search className="absolute left-3 top-2.5 text-neutral-400" size={16} />
           {searchQuery && (
             <button 
-              className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-2.5 text-neutral-400 hover:text-neutral-600"
               onClick={() => setSearchQuery('')}
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-hide">
         {filteredSessions.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
+          <div className="text-center text-neutral-400 py-8 text-sm">
+            {searchQuery ? '没有匹配的会话' : '暂无会话'}
           </div>
         ) : (
           filteredSessions.map(session => (
             <div 
               key={session.id}
-              className={`sidebar-session p-2 pr-1 flex justify-between items-center ${currentSessionId === session.id ? 'active' : ''}`}
+              className={`sidebar-session py-2 px-3 flex justify-between items-center rounded-md group ${
+                currentSessionId === session.id 
+                  ? 'bg-neutral-100 text-neutral-900' 
+                  : 'text-neutral-600 hover:bg-neutral-50'
+              }`}
             >
               {editingId === session.id ? (
                 <input
                   type="text"
-                  className="flex-1 px-2 py-1 border border-indigo-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="flex-1 px-2 py-1 border border-neutral-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   onBlur={() => handleSaveEdit(session.id)}
@@ -146,31 +153,32 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
                 />
               ) : (
                 <div 
-                  className="flex-1 truncate cursor-pointer" 
+                  className="flex items-center flex-1 truncate cursor-pointer" 
                   onClick={() => setCurrentSessionId(session.id)}
                 >
-                  {session.title}
+                  <MessageSquare size={16} className="mr-2 flex-shrink-0" />
+                  <span className="text-sm">{session.title}</span>
                 </div>
               )}
               
-              <div className="flex space-x-1">
+              <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button 
-                  className="text-gray-500 hover:text-indigo-600 p-1 rounded-md hover:bg-gray-100"
+                  className="text-neutral-500 hover:text-neutral-700 p-1 rounded-md hover:bg-neutral-100"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleStartEdit(session.id, session.title);
                   }}
                 >
-                  <Edit size={16} />
+                  <Edit size={14} />
                 </button>
                 <button 
-                  className="text-gray-500 hover:text-red-600 p-1 rounded-md hover:bg-gray-100"
+                  className="text-neutral-500 hover:text-neutral-700 p-1 rounded-md hover:bg-neutral-100"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteSession(session.id);
                   }}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={14} />
                 </button>
               </div>
             </div>
@@ -178,23 +186,32 @@ const Sidebar: React.FC<SidebarProps> = ({ onModelManagerClick, collapsed, onTog
         )}
       </div>
 
-      <div className="p-3 border-t border-gray-200 flex justify-between">
+      <div className="px-3 py-3 border-t border-neutral-100">
         <button
-          className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+          className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-neutral-900 text-white rounded-md hover:bg-neutral-800 transition-colors"
           onClick={handleCreateSession}
         >
           <Plus size={16} />
-          <span>新建会话</span>
+          <span className="text-sm">新建会话</span>
         </button>
       </div>
       
-      <div className="p-3 border-t border-gray-200">
+      <div className="px-3 py-3 border-t border-neutral-100 flex justify-between">
         <button 
-          className="w-full flex items-center space-x-2 py-2 px-4 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+          className="flex-1 flex items-center justify-center py-2 text-neutral-600 hover:bg-neutral-50 rounded-md transition-colors"
           onClick={onModelManagerClick}
         >
           <Settings size={18} />
-          <span>Manage Models</span>
+        </button>
+        <button 
+          className="flex-1 flex items-center justify-center py-2 text-neutral-600 hover:bg-neutral-50 rounded-md transition-colors"
+        >
+          <Library size={18} />
+        </button>
+        <button 
+          className="flex-1 flex items-center justify-center py-2 text-neutral-600 hover:bg-neutral-50 rounded-md transition-colors"
+        >
+          <MoreHorizontal size={18} />
         </button>
       </div>
     </div>

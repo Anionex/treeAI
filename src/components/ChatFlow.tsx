@@ -16,7 +16,7 @@ import { useSessionStore } from '../stores/sessionStore';
 import { useModelStore } from '../stores/modelStore';
 import { ChatNode as ChatNodeType, Session } from '../types';
 import { sendChatRequest, abortRequest } from '../services/apiService';
-import { Share2, DownloadCloud, LayoutGrid } from 'lucide-react';
+import { Share2, UploadCloud, LayoutGrid, FileUp } from 'lucide-react';
 import { exportToMindmap } from '../utils/exportUtils';
 import { gsap } from 'gsap';
 import FileUploadButton from './FileUploadButton';
@@ -516,14 +516,22 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
 
   return (
     <div className="h-full w-full relative">
-      <div className="absolute top-4 right-4 z-10 flex space-x-2">
-        <FileUploadButton onUploadComplete={handleUploadComplete} />
+      <div className="absolute top-4 right-4 z-10 flex space-x-3">
+        <FileUploadButton onUploadComplete={handleUploadComplete}>
+          <button 
+            className="flex items-center justify-center p-2 bg-white border border-neutral-200 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors shadow-minimal"
+            title="上传文件"
+          >
+            <FileUp size={18} />
+          </button>
+        </FileUploadButton>
+        
         <button 
-          className="flex items-center space-x-2 gradient-accent-button text-white px-3 py-2 rounded-md transition-colors"
+          className="flex items-center justify-center p-2 bg-white border border-neutral-200 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors shadow-minimal"
           onClick={handleExport}
+          title="导出思维导图"
         >
-          <Share2 size={16} />
-          <span>Export Mindmap</span>
+          <Share2 size={18} />
         </button>
       </div>
       
@@ -539,7 +547,10 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
         nodesDraggable={true}
         elementsSelectable={true}
         fitView={false}
-        defaultEdgeOptions={{ type: 'smoothstep' }}
+        defaultEdgeOptions={{ 
+          type: 'smoothstep',
+          style: { stroke: '#e5e5e5', strokeWidth: 1 }
+        }}
         onNodesChange={(changes: NodeChange[]) => setNodes(nds => applyNodeChanges(changes, nds))}
         onNodeDragStop={(event, node) => {
           // 节点拖动结束后保存位置
@@ -558,17 +569,17 @@ const ReactFlowWrapper: React.FC<ChatFlowProps> = ({ sessionId }) => {
           });
         }}
       >
-        <Background color="#aaa" gap={16} />
-        <Controls />
+        <Background color="#f5f5f5" gap={18} size={0.5} />
+        <Controls className="bg-white border border-neutral-200 rounded-md shadow-minimal" />
       </ReactFlow>
       
       <div className="absolute bottom-4 right-4 z-10">
         <button 
-          className="flex items-center justify-center gradient-accent-button text-white p-3 rounded-full transition-colors shadow-md"
+          className="flex items-center justify-center p-2.5 bg-white border border-neutral-200 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors shadow-minimal"
           onClick={handleReorganizeLayout}
           title="重新排布节点"
         >
-          <LayoutGrid size={20} />
+          <LayoutGrid size={18} />
         </button>
       </div>
     </div>

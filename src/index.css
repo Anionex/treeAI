@@ -3,22 +3,35 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #2563eb;
-  --color-primary-light: #3b82f6;
-  --color-secondary: #10b981;
-  --color-accent: #f97316;
+  /* 极简主义中性色调 */
+  --color-background: #fafafa;
+  --color-surface: #ffffff;
+  --color-border: #e5e5e5;
+  --color-divider: #f5f5f5;
+  
+  /* 文本颜色 */
+  --color-text: #171717;
+  --color-text-light: #525252;
+  --color-text-muted: #737373;
+  
+  /* 功能色 */
+  --color-primary: #262626;
+  --color-primary-light: #404040;
   --color-success: #22c55e;
   --color-warning: #eab308;
   --color-error: #ef4444;
-  --color-background: #f9fafb;
-  --color-surface: #ffffff;
-  --color-text: #1f2937;
-  --color-text-light: #6b7280;
+  
+  /* 间距 */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  @apply bg-gray-50 text-gray-900 overflow-hidden;
+  @apply bg-neutral-50 text-neutral-900 overflow-hidden;
   height: 100vh;
 }
 
@@ -41,8 +54,8 @@ body {
 }
 
 .assistant-message {
-  background: linear-gradient(to bottom, #ebf5ff, #f0f7ff);
-  border: 1px solid rgba(191, 219, 254, 0.7);
+  background: linear-gradient(to bottom, #fafafa, #f5f5f5);
+  border: 1px solid rgba(229, 229, 229, 0.7);
   overflow-y: auto;
   max-height: 400px;
   scroll-behavior: smooth;
@@ -59,7 +72,7 @@ body {
 }
 
 .react-flow__handle {
-  background: linear-gradient(to right, #2563eb, #3b82f6);
+  background: #a3a3a3;
   border: 2px solid white;
 }
 
@@ -83,58 +96,56 @@ body {
   border-radius: 0.75rem;
 }
 
-/* 头部渐变样式 */
+/* 头部样式 */
 .chat-node-header {
-  background: linear-gradient(to right, #3b82f6, #60a5fa);
-  border-bottom: 1px solid rgba(191, 219, 254, 0.2);
+  background: #f5f5f5;
+  border-bottom: 1px solid rgba(229, 229, 229, 0.8);
 }
 
 .system-node-header {
-  background: linear-gradient(to right, #2563eb, #3b82f6);
-  border-bottom: 1px solid rgba(191, 219, 254, 0.2);
+  background: #f5f5f5;
+  border-bottom: 1px solid rgba(229, 229, 229, 0.8);
 }
 
 /* 设置面板背景 */
 .settings-panel {
-  background: linear-gradient(to bottom, #eff6ff, #f8fafc);
-  border-bottom: 1px solid rgba(191, 219, 254, 0.5);
+  background: #fafafa;
+  border-bottom: 1px solid rgba(229, 229, 229, 0.8);
 }
 
-/* 按钮渐变 */
+/* 按钮样式 */
 .gradient-button {
-  background: linear-gradient(to right, #3b82f6, #60a5fa);
-  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
+  background: #262626;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
 }
 
 .gradient-button:hover {
-  background: linear-gradient(to right, #2563eb, #3b82f6);
-  box-shadow: 0 3px 7px rgba(37, 99, 235, 0.4);
+  background: #404040;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* 透明发送按钮 */
+/* 发送按钮 */
 .send-button {
-  @apply text-blue-600 hover:text-blue-800;
-  /* border: 1px solid rgba(37, 99, 235, 0.3); */
+  @apply text-neutral-600 hover:text-neutral-800;
   transition: all 0.2s;
 }
 
 .send-button:hover {
-  /* border: 1px solid rgba(37, 99, 235, 0.5); */
-  background-color: rgba(219, 234, 254, 0.5);
+  background-color: rgba(229, 229, 229, 0.5);
 }
 
 .send-button:disabled {
-  @apply text-gray-400 border-gray-200;
+  @apply text-neutral-400;
   background-color: transparent;
 }
 
 .sidebar-session {
-  @apply hover:bg-gray-100 transition-colors duration-200 cursor-pointer rounded-md;
+  @apply hover:bg-neutral-100 transition-colors duration-200 cursor-pointer rounded-md;
 }
 
 .sidebar-session.active {
-  @apply bg-blue-100 text-blue-700;
+  @apply bg-neutral-100 text-neutral-900;
 }
 
 .md-editor-preview-wrapper {
@@ -172,7 +183,7 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-500;
+  @apply text-neutral-800;
 }
 
 .sidebar {
@@ -201,38 +212,37 @@ body {
   border-radius: 2em;
 }
 
-/* 普通按钮渐变 - 用于替换bg-indigo-600 */
+/* 主要按钮 */
 .gradient-primary-button {
-  background: linear-gradient(to right, #4f46e5, #6366f1);
-  box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
+  background: #262626;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
 }
 
 .gradient-primary-button:hover {
-  background: linear-gradient(to right, #4338ca, #4f46e5);
-  box-shadow: 0 3px 7px rgba(79, 70, 229, 0.4);
+  background: #404040;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* 强调按钮渐变 - 蓝紫过渡 */
+/* 强调按钮 */
 .gradient-accent-button {
-  background: linear-gradient(135deg, #3b82f6, #6366f1);
-  box-shadow: 0 2px 5px rgba(99, 102, 241, 0.3);
+  background: #262626;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
 }
 
 .gradient-accent-button:hover {
-  background: linear-gradient(135deg, #2563eb, #4f46e5);
-  box-shadow: 0 3px 7px rgba(99, 102, 241, 0.4);
+  background: #404040;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* 轮廓渐变按钮 - 用于文件上传等次要按钮 */
+/* 轮廓按钮 - 用于文件上传等次要按钮 */
 .gradient-outline-button {
   background: white;
-  border: 1px solid;
-  border-image: linear-gradient(to right, #93c5fd, #a5b4fc) 1;
+  border: 1px solid #e5e5e5;
   transition: all 0.2s;
 }
 
 .gradient-outline-button:hover {
-  background: linear-gradient(to bottom, white, #f5f3ff);
+  background: #f5f5f5;
 }

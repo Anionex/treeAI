@@ -79,51 +79,51 @@ const ModelManager: React.FC<ModelManagerProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
       <div 
         ref={modalRef}
-        className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+        className="bg-white rounded-lg shadow-subtle max-w-4xl w-full max-h-[90vh] flex flex-col"
       >
-        <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold gradient-text">Model Manager</h2>
+        <div className="flex justify-between items-center p-4 border-b border-neutral-100">
+          <h2 className="text-lg font-medium text-neutral-800">模型管理</h2>
           <button 
-            className="text-gray-500 hover:text-gray-700"
+            className="text-neutral-500 hover:text-neutral-700 p-1 rounded-md hover:bg-neutral-50"
             onClick={onClose}
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
         
         <div className="flex flex-1 overflow-hidden">
-          <div className="w-1/3 border-r border-gray-200 p-3 overflow-y-auto">
+          <div className="w-1/3 border-r border-neutral-100 p-4 overflow-y-auto">
             <div className="mb-3 flex justify-between items-center">
-              <h3 className="font-semibold text-gray-700">Your Models</h3>
+              <h3 className="text-sm font-medium text-neutral-700">模型列表</h3>
               <button 
-                className="flex items-center space-x-1 text-indigo-600 hover:text-indigo-800"
+                className="flex items-center space-x-1 text-neutral-600 hover:text-neutral-800 p-1 rounded hover:bg-neutral-50"
                 onClick={handleAddModel}
               >
-                <Plus size={16} />
-                <span>Add</span>
+                <Plus size={14} />
+                <span className="text-xs">添加</span>
               </button>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-1">
               {models.length === 0 ? (
-                <div className="text-center text-gray-500 p-4">
-                  No models configured yet
+                <div className="text-center text-neutral-400 p-4 text-sm">
+                  暂无配置模型
                 </div>
               ) : (
                 models.map(model => (
                   <div 
                     key={model.id}
-                    className={`p-2 rounded-md cursor-pointer flex justify-between items-center ${
-                      editingModel?.id === model.id ? 'bg-indigo-100' : 'hover:bg-gray-100'
+                    className={`py-2 px-3 rounded-md cursor-pointer flex justify-between items-center ${
+                      editingModel?.id === model.id ? 'bg-neutral-100 text-neutral-900' : 'hover:bg-neutral-50 text-neutral-600'
                     }`}
                     onClick={() => handleEditModel(model)}
                   >
-                    <span className="truncate">{model.name}</span>
+                    <span className="truncate text-sm">{model.name}</span>
                     <button 
-                      className="text-gray-500 hover:text-red-600 p-1"
+                      className="text-neutral-400 hover:text-neutral-700 p-1 rounded hover:bg-neutral-100"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteModel(model.id);
@@ -141,75 +141,78 @@ const ModelManager: React.FC<ModelManagerProps> = ({ onClose }) => {
             {editingModel ? (
               <form ref={formRef} onSubmit={handleSaveModel} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Model Name
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    模型名称
                   </label>
                   <input
                     type="text"
                     value={editingModel.name}
                     onChange={(e) => setEditingModel({ ...editingModel, name: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2 border border-neutral-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    API URL
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    API 地址
                   </label>
                   <input
                     type="url"
                     value={editingModel.baseUrl}
                     onChange={(e) => setEditingModel({ ...editingModel, baseUrl: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2 border border-neutral-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
                     placeholder="https://api.openai.com/v1"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    API Key
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    API 密钥
                   </label>
                   <input
                     type="password"
                     value={editingModel.apiKey}
                     onChange={(e) => setEditingModel({ ...editingModel, apiKey: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2 border border-neutral-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Model Name (e.g., gpt-4)
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    模型标识 (例如: gpt-4)
                   </label>
                   <input
                     type="text"
                     value={editingModel.modelName}
                     onChange={(e) => setEditingModel({ ...editingModel, modelName: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2 border border-neutral-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Default System Prompt
+                  <label className="block text-xs font-medium text-neutral-700 mb-1">
+                    默认系统提示词
                   </label>
                   <textarea
                     value={editingModel.defaultSystemPrompt}
                     onChange={(e) => setEditingModel({ ...editingModel, defaultSystemPrompt: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md h-32 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full p-2 border border-neutral-200 rounded-md h-32 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
                     required
                   />
                 </div>
                 
                 <div className="flex space-x-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Temperature: {editingModel.temperature.toFixed(1)}
-                    </label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-medium text-neutral-700">
+                        默认温度
+                      </label>
+                      <span className="text-xs text-neutral-500">{editingModel.temperature.toFixed(1)}</span>
+                    </div>
                     <input
                       type="range"
                       min="0"
@@ -217,14 +220,17 @@ const ModelManager: React.FC<ModelManagerProps> = ({ onClose }) => {
                       step="0.1"
                       value={editingModel.temperature}
                       onChange={(e) => setEditingModel({ ...editingModel, temperature: parseFloat(e.target.value) })}
-                      className="w-full"
+                      className="w-full accent-neutral-700"
                     />
                   </div>
                   
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Max Tokens: {editingModel.maxTokens}
-                    </label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-xs font-medium text-neutral-700">
+                        默认最大令牌数
+                      </label>
+                      <span className="text-xs text-neutral-500">{editingModel.maxTokens}</span>
+                    </div>
                     <input
                       type="range"
                       min="256"
@@ -232,41 +238,41 @@ const ModelManager: React.FC<ModelManagerProps> = ({ onClose }) => {
                       step="256"
                       value={editingModel.maxTokens}
                       onChange={(e) => setEditingModel({ ...editingModel, maxTokens: parseInt(e.target.value) })}
-                      className="w-full"
+                      className="w-full accent-neutral-700"
                     />
                   </div>
                 </div>
                 
-                <div className="flex justify-end space-x-3 pt-3 border-t border-gray-200">
+                <div className="flex justify-end space-x-3 pt-3 border-t border-neutral-100">
                   <button
                     type="button"
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-neutral-200 rounded-md text-neutral-600 hover:bg-neutral-50 text-sm transition-colors"
                     onClick={() => setEditingModel(null)}
                   >
-                    Cancel
+                    取消
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center space-x-2 px-4 py-2 gradient-primary-button text-white rounded-md transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-neutral-900 text-white rounded-md hover:bg-neutral-800 text-sm transition-colors"
                   >
-                    <Save size={16} />
-                    <span>Save Model</span>
+                    <Save size={14} />
+                    <span>保存模型</span>
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200 max-w-md">
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">Model Configuration</h3>
-                  <p className="mb-4">
-                    Select a model from the list to edit or create a new one.
+              <div className="flex flex-col items-center justify-center h-full text-neutral-500">
+                <div className="text-center p-6 bg-neutral-50 rounded-lg border border-neutral-100 max-w-md">
+                  <h3 className="text-base font-medium text-neutral-700 mb-2">模型配置</h3>
+                  <p className="mb-4 text-sm text-neutral-500">
+                    从左侧列表选择一个模型进行编辑，或创建一个新模型。
                   </p>
                   <button 
-                    className="inline-flex items-center space-x-2 px-4 py-2 gradient-primary-button text-white rounded-md transition-colors"
+                    className="inline-flex items-center space-x-2 px-4 py-2 bg-neutral-900 text-white rounded-md hover:bg-neutral-800 text-sm transition-colors"
                     onClick={handleAddModel}
                   >
-                    <Plus size={16} />
-                    <span>Add New Model</span>
+                    <Plus size={14} />
+                    <span>添加新模型</span>
                   </button>
                 </div>
               </div>

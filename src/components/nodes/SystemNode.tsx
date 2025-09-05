@@ -74,35 +74,35 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
   return (
     <div 
       ref={nodeRef}
-      className={`node-content system-node rounded-lg overflow-hidden ${nodeHeight}`}
+      className={`node-content bg-white rounded-lg overflow-hidden border border-neutral-200 shadow-minimal ${nodeHeight}`}
     >
-      <div className="system-node-header text-white p-2 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <Settings size={16} />
-          <span className="font-medium">System Prompt</span>
+      <div className="flex justify-between items-center p-2 text-neutral-700 border-b border-neutral-100">
+        <div className="flex items-center">
+          <Settings size={14} className="mr-1.5 text-neutral-500" />
+          <span className="text-xs font-medium">系统提示词</span>
         </div>
         
         <div className="flex space-x-1 node-toolbar">
           <button 
-            className="p-1 rounded hover:bg-blue-500/30 transition-colors"
+            className="p-1 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 rounded transition-colors"
             onClick={() => setShowSettings(!showSettings)}
-            title="Model Settings"
+            title="模型设置"
           >
-            <Settings size={16} />
+            <Settings size={12} />
           </button>
         </div>
       </div>
 
       {showSettings && (
-        <div className="p-3 settings-panel">
+        <div className="p-3 bg-neutral-50 border-b border-neutral-100">
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Model
+            <label className="block text-xs font-medium text-neutral-700 mb-1">
+              模型
             </label>
             <select
               value={node.modelId || ''}
               onChange={(e) => onModelChange(node.id, e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-1.5 text-xs border border-neutral-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
             >
               {models.map(model => (
                 <option key={model.id} value={model.id}>{model.name}</option>
@@ -111,9 +111,12 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
           </div>
           
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Temperature: {node.temperature.toFixed(1)}
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-xs font-medium text-neutral-700">
+                温度
+              </label>
+              <span className="text-xs text-neutral-500">{node.temperature.toFixed(1)}</span>
+            </div>
             <input
               type="range"
               min="0"
@@ -121,14 +124,17 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
               step="0.1"
               value={node.temperature}
               onChange={(e) => onTemperatureChange(node.id, parseFloat(e.target.value))}
-              className="w-full"
+              className="w-full accent-neutral-700"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Max Tokens: {node.maxTokens}
-            </label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-xs font-medium text-neutral-700">
+                最大令牌数
+              </label>
+              <span className="text-xs text-neutral-500">{node.maxTokens}</span>
+            </div>
             <input
               type="range"
               min="256"
@@ -136,13 +142,13 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
               step="256"
               value={node.maxTokens}
               onChange={(e) => onMaxTokensChange(node.id, parseInt(e.target.value))}
-              className="w-full"
+              className="w-full accent-neutral-700"
             />
           </div>
         </div>
       )}
 
-      <div className="p-3 bg-gradient-to-b from-white to-gray-50">
+      <div className="p-3">
         {isEditing ? (
           <textarea
             ref={textareaRef}
@@ -150,28 +156,29 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
             onChange={(e) => setSystemPrompt(e.target.value)}
             onBlur={handleSave}
             onKeyDown={handleKeyDown}
-            className="w-full h-32 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter system prompt..."
+            className="w-full h-32 p-2.5 border border-neutral-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-neutral-400"
+            placeholder="在此输入系统提示词..."
           />
         ) : (
           <div 
-            className="min-h-[60px] cursor-pointer overflow-wrap-break-word" 
+            className="min-h-[60px] cursor-pointer text-sm" 
             onClick={handleEdit}
             style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}
           >
             {node.userMessage || (
-              <span className="text-gray-400 italic">
-                Click to add system prompt...
+              <span className="text-neutral-400 italic">
+                点击添加系统提示词...
               </span>
             )}
           </div>
         )}
       </div>
 
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-2 flex justify-end space-x-2 border-t border-blue-100">
+      <div className="p-2 flex justify-end space-x-2 border-t border-neutral-100">
         <button 
-          className="gradient-button flex items-center space-x-1 px-2 py-1 text-white rounded hover:shadow-md transition-all"
+          className="flex items-center justify-center p-1.5 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-colors"
           onClick={() => onAddChild(node.id)}
+          title="添加子节点"
         >
           <Plus size={14} />
         </button>
@@ -180,6 +187,7 @@ const SystemNode: React.FC<SystemNodeProps> = ({ id, data }) => {
       <Handle
         type="source"
         position={Position.Bottom}
+        className="!bg-neutral-400 !border-white"
       />
     </div>
   );
