@@ -17,7 +17,7 @@ console.log('TreeChat App starting...');
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  console.error('Root element not found!');
+  throw new Error('Root element not found! The app cannot be mounted.');
 } else {
   console.log('Root element found, rendering app...');
   createRoot(rootElement).render(
