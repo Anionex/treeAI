@@ -20,13 +20,19 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const initializeData = async () => {
-      await loadSessions();
-      await loadModels();
-      setIsLoading(false);
+      try {
+        await loadSessions();
+        await loadModels();
+      } catch (error) {
+        console.error('Failed to initialize data:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initializeData();
-  }, [loadSessions, loadModels]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isLoading && sessions.length > 0 && !currentSessionId) {
