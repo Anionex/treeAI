@@ -1,3 +1,5 @@
+
+
 # TreeChat - 树状结构对话应用
 
 ## 项目描述
@@ -23,7 +25,7 @@ minimal theme(new):
 - 语言: TypeScript
 - 构建工具: Vite
 - CSS框架: Tailwind CSS + PostCSS
-- 状态管理: 自定义Store方案
+- 状态管理: Zustand
 - 代码规范: ESLint
 
 ## 功能特性
